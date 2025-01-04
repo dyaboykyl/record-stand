@@ -1,5 +1,6 @@
 
 #include <EasyLogger.h>
+#include <WiFi.h>
 #include <lvgl.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -10,6 +11,7 @@
 #include <thread>
 
 #include "network.h"
+#include "storage.h"
 #include "utils.h"
 
 using namespace std;
@@ -110,6 +112,8 @@ static void ssidDropdownEventHandler(lv_event_t *e) {
     lv_dropdown_set_text(ssidDropdown, NULL);
     LV_LOG_USER("Option: %s", selectedSsid);
     updateConnectButton();
+    enable(passwordTextArea);
+    lv_obj_set_style_bg_color(passwordTextArea, lv_color_white(), 0);
   }
 }
 
@@ -178,14 +182,28 @@ void buildPasswordInputText() {
   lv_obj_set_width(passwordTextArea, 230);
   lv_obj_set_pos(passwordTextArea, 170, 150);
   lv_obj_add_event_cb(passwordTextArea, passwordCallback, LV_EVENT_ALL, NULL);
-  lv_obj_set_style_bg_color(passwordTextArea, DISABLED_COLOR, 0);
   disable(passwordTextArea);
+  lv_obj_set_style_bg_color(passwordTextArea, DISABLED_COLOR, 0);
   // lv_textarea_set_placeholder_text(passwordTextArea, "Password");
 }
 
 void buildPasswordInput() {
   buildPasswordInputLabel();
   buildPasswordInputText();
+}
+
+void checkConnect(lv_timer_t *timer) {
+  // LOG_DEBUG(TAG, "Checking scan");
+  auto status = getWifiStatus();
+  // LOG_DEBUG(TAG, (String) "checkConnect: " + status);
+  if (status == WL_IDLE_STATUS) {
+    return;
+  }
+
+  LOG_DEBUG(TAG, (String) "Connecting finished: " + status);
+  lv_label_set_text(statusLabel, status == WL_CONNECTED ? "Connected" : "Failed to connect");
+  lv_timer_delete(timer);
+  hide(loadingSpinner);
 }
 
 void connectButtonCallback(lv_event_t *e) {
@@ -196,6 +214,10 @@ void connectButtonCallback(lv_event_t *e) {
     hide(keyboard);
     show(loadingSpinner);
     lv_label_set_text(statusLabel, "Connecting...");
+    auto password = lv_textarea_get_text(passwordTextArea);
+    LOG_DEBUG(TAG, (String) "Connecting to " + selectedSsid + " Password: " + password);
+    connectToWifi(selectedSsid, password);
+    lv_timer_create(checkConnect, 20, NULL);
   } else if (code == LV_EVENT_VALUE_CHANGED) {
     LV_LOG_USER("Toggled");
   }
@@ -258,13 +280,11 @@ void setSsidOptions() {
   // return;
 
   lv_dropdown_set_options(ssidDropdown, options.c_str());
-  lv_dropdown_set_selected(ssidDropdown, 0);
+  lv_dropdown_set_selected(ssidDropdown, 1);
   lv_dropdown_set_text(ssidDropdown, "");
   // enable ssid and password
   enable(ssidDropdown);
-  enable(passwordTextArea);
   lv_obj_set_style_bg_color(ssidDropdown, lv_color_white(), 0);
-  lv_obj_set_style_bg_color(passwordTextArea, lv_color_white(), 0);
 }
 
 void checkScan(lv_timer_t *timer) {
@@ -288,6 +308,13 @@ void startScan() {
   lv_timer_create(checkScan, 20, NULL);
 }
 
+void checkWifi() {
+  auto ssid = readFromStorage(WIFI_SSID);
+  LOG_DEBUG(TAG, (String) "Read ssid from storage: " + ssid);
+  if (!ssid || ssid == "") {
+  }
+}
+
 void buildWifiScreen() {
   buildTitle();
   buildSsidInput();
@@ -299,5 +326,4 @@ void buildWifiScreen() {
   buildSpinner();
 
   // startScan();
-  // thread t1(scanNetworks);
 }

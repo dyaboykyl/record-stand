@@ -163,8 +163,8 @@ void background() {
   lv_obj_set_size(background, 480, 480);
   lv_obj_set_pos(background, 0, 0);
   lv_obj_set_style_bg_color(background, BASE_ONE, 0);
-  lv_obj_set_style_bg_grad_color(background, BASE_ONE_GRAD, 0);
-  lv_obj_set_style_bg_grad_dir(background, LV_GRAD_DIR_VER, 0);
+  // lv_obj_set_style_bg_grad_color(background, BASE_ONE_GRAD, 0);
+  // lv_obj_set_style_bg_grad_dir(background, LV_GRAD_DIR_VER, 0);
   // lvobdithe
 
   // static lv_grad_dsc_t gradient = {

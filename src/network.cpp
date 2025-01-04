@@ -25,6 +25,10 @@ bool isConnected() {
   WiFi.status();
 }
 
+int getWifiStatus() {
+  return WiFi.status();
+}
+
 bool checkWifiScan() {
   int result = WiFi.scanComplete();
   if (result == WIFI_SCAN_RUNNING) {
@@ -60,14 +64,13 @@ void scanNetworks() {
 
 std::vector<String>* getNetworks() { return &ssids; }
 
-void connectToWifi() {
+void connectToWifi(const char* ssid, const char* password) {
   WiFi.mode(WIFI_STA);
-  WiFi.begin("DIGIFIBRA-cYQX", "");
+  WiFi.begin(ssid, password);
 
-  // wait for WiFi connection
-  // Serial.print("Waiting for WiFi to connect...");
+  Serial.print("Waiting for WiFi to connect...");
   // while (WiFi.status() != WL_CONNECTED) {
-  //   // Serial.print(".");
+  //   Serial.println(WiFi.status());
   // }
   // Serial.println(" connected");
 }

@@ -10,7 +10,9 @@
 #include <WiFi.h>
 #include <esp_log.h>
 #include <lvgl.h>
-#include <screen.h>
+
+#include "screen.h"
+#include "storage.h"
 
 #define LOG_LEVEL LOG_LEVEL_NOTICE
 #define TAG "Main-TS"
@@ -23,18 +25,22 @@ void setup(void) {
 
   LOG_INFO(TAG, "Beginning");
   initScreen();
+  setupStorage();
   // Serial.println("Initialized!");
 }
 
 extern void startScan();
+extern void checkWifi();
 void loop() {
   if (buttonOnePressed()) {
-    startScan();
+    // startScan();
+    writeToStorage(WIFI_SSID, "test ssid");
+    auto ssid = readFromStorage(WIFI_SSID);
   }
 
   if (buttonTwoPressed()) {
     // ESP.restart();
-    toggleBacklight();
+    checkWifi();
   }
 
   lv_timer_handler(); /* let the GUI do its work */
