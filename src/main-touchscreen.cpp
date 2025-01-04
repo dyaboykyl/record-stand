@@ -24,8 +24,8 @@ void setup(void) {
   // while (!Serial) delay(100);
 
   LOG_INFO(TAG, "Beginning");
-  initScreen();
   setupStorage();
+  initScreen();
   // Serial.println("Initialized!");
 }
 
@@ -33,9 +33,9 @@ extern void startScan();
 extern void checkWifi();
 void loop() {
   if (buttonOnePressed()) {
-    // startScan();
-    writeToStorage(WIFI_SSID, "test ssid");
-    auto ssid = readFromStorage(WIFI_SSID);
+    startScan();
+    // writeToStorage(WIFI_SSID, "test ssid");
+    // auto ssid = readFromStorage(WIFI_SSID);
   }
 
   if (buttonTwoPressed()) {

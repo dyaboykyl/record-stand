@@ -25,9 +25,7 @@ bool isConnected() {
   WiFi.status();
 }
 
-int getWifiStatus() {
-  return WiFi.status();
-}
+int getWifiStatus() { return WiFi.status(); }
 
 bool checkWifiScan() {
   int result = WiFi.scanComplete();
@@ -67,8 +65,7 @@ std::vector<String>* getNetworks() { return &ssids; }
 void connectToWifi(const char* ssid, const char* password) {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-
-  Serial.print("Waiting for WiFi to connect...");
+  LOG_DEBUG(TAG, (String) "Connecting to " + ssid);
   // while (WiFi.status() != WL_CONNECTED) {
   //   Serial.println(WiFi.status());
   // }

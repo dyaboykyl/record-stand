@@ -26,8 +26,8 @@ lv_obj_t *connectButton;
 lv_obj_t *loadingSpinner;
 
 char selectedSsid[100] = "";
-string connectedSSid = "";
 bool connecting = false;
+int connectionCheckAttempts = 0;
 
 void updateConnectButton() {
   auto password = lv_textarea_get_text(passwordTextArea);
@@ -126,7 +126,7 @@ void buildSsidInputDropdown() {
   // lv_sty
 
   ssidDropdown = lv_dropdown_create(lv_screen_active());
-  const char *scanningLabel = "Scanning...";
+  const char *scanningLabel = "Waiting to scan...";
 
   lv_dropdown_set_text(ssidDropdown, scanningLabel);
   lv_dropdown_set_options(ssidDropdown, "");
@@ -182,8 +182,8 @@ void buildPasswordInputText() {
   lv_obj_set_width(passwordTextArea, 230);
   lv_obj_set_pos(passwordTextArea, 170, 150);
   lv_obj_add_event_cb(passwordTextArea, passwordCallback, LV_EVENT_ALL, NULL);
-  disable(passwordTextArea);
   lv_obj_set_style_bg_color(passwordTextArea, DISABLED_COLOR, 0);
+  disable(passwordTextArea);
   // lv_textarea_set_placeholder_text(passwordTextArea, "Password");
 }
 
@@ -200,10 +200,35 @@ void checkConnect(lv_timer_t *timer) {
     return;
   }
 
+  if (status != WL_CONNECTED && connectionCheckAttempts++ < 3) {
+    return;
+  }
+
   LOG_DEBUG(TAG, (String) "Connecting finished: " + status);
   lv_label_set_text(statusLabel, status == WL_CONNECTED ? "Connected" : "Failed to connect");
   lv_timer_delete(timer);
   hide(loadingSpinner);
+
+  if (status == WL_CONNECTED) {
+    auto password = lv_textarea_get_text(passwordTextArea);
+    if (strlen(password) > 0 && strlen(selectedSsid) > 0) {
+      writeToStorage(WIFI_SSID, selectedSsid);
+      writeToStorage(WIFI_PASSWORD, password);
+    }
+  }
+}
+
+void tryConnectToWifi(String ssid = "", String password = "") {
+  hide(keyboard);
+  show(loadingSpinner);
+  lv_label_set_text(statusLabel, "Connecting...");
+
+  auto ssidToUse = ssid == "" ? selectedSsid : ssid.c_str();
+  auto passwordToUse = password == "" ? lv_textarea_get_text(passwordTextArea) : password.c_str();
+  LOG_DEBUG(TAG, (String) "Connecting to " + selectedSsid + " Password: " + password);
+  connectToWifi(ssidToUse, passwordToUse);
+  connectionCheckAttempts = 0;
+  lv_timer_create(checkConnect, 20, NULL);
 }
 
 void connectButtonCallback(lv_event_t *e) {
@@ -211,15 +236,7 @@ void connectButtonCallback(lv_event_t *e) {
 
   if (code == LV_EVENT_CLICKED) {
     LV_LOG_USER("Clicked");
-    hide(keyboard);
-    show(loadingSpinner);
-    lv_label_set_text(statusLabel, "Connecting...");
-    auto password = lv_textarea_get_text(passwordTextArea);
-    LOG_DEBUG(TAG, (String) "Connecting to " + selectedSsid + " Password: " + password);
-    connectToWifi(selectedSsid, password);
-    lv_timer_create(checkConnect, 20, NULL);
-  } else if (code == LV_EVENT_VALUE_CHANGED) {
-    LV_LOG_USER("Toggled");
+    tryConnectToWifi();
   }
 }
 
@@ -243,7 +260,7 @@ void buildConnectionStatus() {
   lv_style_set_text_align(&style, LV_TEXT_ALIGN_CENTER);
 
   statusLabel = lv_label_create(lv_screen_active());
-  string statusText = connectedSSid == "" ? "Not connected" : "Connected to: ";
+  String statusText = "Not connected";
   lv_label_set_text(statusLabel, statusText.c_str());
   lv_obj_add_style(statusLabel, &style, 0);
   lv_obj_align(statusLabel, LV_ALIGN_TOP_MID, 0, 270);
@@ -303,6 +320,7 @@ void startScan() {
   // lv_label_set_text(statusLabel, "Scanning")
   // sleep(1);
   LOG_INFO(TAG, "Starting scan task");
+  lv_dropdown_set_text(ssidDropdown, "Scanning...");
   setupWifi();
   scanNetworks();
   lv_timer_create(checkScan, 20, NULL);
@@ -310,9 +328,16 @@ void startScan() {
 
 void checkWifi() {
   auto ssid = readFromStorage(WIFI_SSID);
-  LOG_DEBUG(TAG, (String) "Read ssid from storage: " + ssid);
   if (!ssid || ssid == "") {
+    return;
   }
+
+  auto password = readFromStorage(WIFI_PASSWORD);
+  if (!password || password == "") {
+    return;
+  }
+
+  tryConnectToWifi(ssid, password);
 }
 
 void buildWifiScreen() {
