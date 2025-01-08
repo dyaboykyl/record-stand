@@ -62,12 +62,15 @@ void scanNetworks() {
 
 std::vector<String>* getNetworks() { return &ssids; }
 
-void connectToWifi(const char* ssid, const char* password) {
+void connectToWifi(const char* ssid, const char* password, bool connect) {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  LOG_DEBUG(TAG, (String) "Connecting to " + ssid);
-  // while (WiFi.status() != WL_CONNECTED) {
-  //   Serial.println(WiFi.status());
-  // }
-  // Serial.println(" connected");
+  LOG_INFO(TAG, (String) "Connecting to " + ssid);
+  if (connect) {
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(5);
+      Serial.print(".");
+    }
+    LOG_INFO(TAG, "Connected");
+  }
 }

@@ -9,7 +9,7 @@
 
 #define TAG "Storage"
 
-void setupStorage() {
+void initStorage() {
   if (!EEPROM.begin(EEPROM_SIZE)) {
     Serial.println("failed to init EEPROM");
     return;

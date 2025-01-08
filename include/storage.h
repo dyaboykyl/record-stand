@@ -10,6 +10,6 @@ enum StorageKey {
   KEY_COUNT
 };
 
-void setupStorage();
+void initStorage();
 void writeToStorage(StorageKey key, String value);
 String readFromStorage(StorageKey key);

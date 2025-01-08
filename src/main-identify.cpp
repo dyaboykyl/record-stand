@@ -11,42 +11,47 @@
 #include <esp_log.h>
 #include <lvgl.h>
 
+#include "audio.h"
+#include "controller.h"
+#include "network.h"
 #include "screen.h"
 #include "storage.h"
+#include "wav.h"
 
 #define LOG_LEVEL LOG_LEVEL_NOTICE
-#define TAG "Main-TS"
+#define TAG "Main-Identify"
+
+void connect() {
+  auto ssid = readFromStorage(WIFI_SSID);
+  if (!ssid || ssid == "") {
+    return;
+  }
+
+  auto password = readFromStorage(WIFI_PASSWORD);
+  if (!password || password == "") {
+    return;
+  }
+
+  connectToWifi(ssid.c_str(), password.c_str(), true);
+}
 
 void setup(void) {
   esp_log_level_set("*", ESP_LOG_INFO);
   Serial.begin(115200);
   delay(200);
-  // while (!Serial) delay(100);
 
   LOG_INFO(TAG, "Beginning");
-  initStorage();
-  initButtons();
-  initScreen();
-  // Serial.println("Initialized!");
+  initAll();
 }
 
-extern void startScan();
-extern void checkWifi();
 void loop() {
   if (buttonOnePressed()) {
-    startScan();
-    // writeToStorage(WIFI_SSID, "test ssid");
-    // auto ssid = readFromStorage(WIFI_SSID);
+    runWavTask();
   }
 
   if (buttonTwoPressed()) {
-    // ESP.restart();
-    checkWifi();
+    connect();
   }
 
-  lv_timer_handler(); /* let the GUI do its work */
-  delay(5);           /* let this time pass */
-  // reactToTouch();
-  // delay(1);
-  // LOG_INFO(TAG, "Looping...");
+  delay(100);
 }

@@ -311,7 +311,6 @@ extern void buildWifiScreen();
 void initScreen() {
   LOG_INFO(TAG, "Initializing");
 
-  initButtons();
   colorWheel = (uint16_t *)ps_malloc(gfx->width() * gfx->height() * sizeof(uint16_t));
   colorWheelPixels = (Pixel *)ps_malloc(gfx->width() * gfx->height() * sizeof(Pixel));
 
