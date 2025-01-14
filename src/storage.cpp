@@ -11,9 +11,10 @@
 
 void initStorage() {
   if (!EEPROM.begin(EEPROM_SIZE)) {
-    Serial.println("failed to init EEPROM");
+    LOG_ERROR(TAG, "failed to init EEPROM");
     return;
   }
+  LOG_INFO(TAG, "Storage initialized");
 }
 
 void writeToStorage(StorageKey key, String value) {

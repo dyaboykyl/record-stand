@@ -57,3 +57,4 @@ bool wavFilled();
 void finishWav(int totalMs);
 void writeWavFileToSerial(int size = -1);
 void recordWavAtRate(int rate);
+void recordWavFromI2S();

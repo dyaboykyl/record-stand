@@ -21,22 +21,15 @@
 #define LOG_LEVEL LOG_LEVEL_NOTICE
 #define TAG "Main-Identify"
 
-void connect() {
-  auto ssid = readFromStorage(WIFI_SSID);
-  if (!ssid || ssid == "") {
-    return;
-  }
+#ifdef CORE_DEBUG_LEVEL
+#undef CORE_DEBUG_LEVEL
+#endif
 
-  auto password = readFromStorage(WIFI_PASSWORD);
-  if (!password || password == "") {
-    return;
-  }
-
-  connectToWifi(ssid.c_str(), password.c_str(), true);
-}
+#define CORE_DEBUG_LEVEL 5
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 
 void setup(void) {
-  esp_log_level_set("*", ESP_LOG_INFO);
+  esp_log_level_set("*", ESP_LOG_DEBUG);
   Serial.begin(115200);
   delay(200);
 
@@ -47,10 +40,13 @@ void setup(void) {
 void loop() {
   if (buttonOnePressed()) {
     runWavTask();
+    // // delay(2000);
+    // initAudio();
+    // // scanNetworks();
   }
 
   if (buttonTwoPressed()) {
-    connect();
+    connectToSavedWifi();
   }
 
   delay(100);

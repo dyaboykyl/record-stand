@@ -4,7 +4,7 @@
 
 #include "audio.h"
 
-#define MAX_WAV_SAMPLES (25000 * 5)
+#define MAX_WAV_SAMPLES (44100 * 5)
 #define WAV_HEADER_SIZE 44
 #define WAV_RIFF_OFFSET 8
 
@@ -37,8 +37,7 @@ void recordWavAtRate(int rate) {
   do {
     current = micros();
     if ((current - last) >= microsPerSample) {
-      readAudio(&value);
-      addWavSample(value);
+      addWavSample(readAudio());
       last = current;
     }
   } while (!wavFilled());
@@ -52,17 +51,32 @@ void recordWavAtRate(int rate) {
   finishWav(totalMs);
 }
 
+void recordWavFromI2S() {
+  startNewWav();
+
+  unsigned long start = millis();
+  unsigned long currentMs = start;
+  int value = 0;
+  while (!wavFilled()) {
+    auto audioData = readI2sAudio();
+    for (int i = 0; i < audioData->size && !wavFilled(); i++) {
+      addWavSample(map(audioData->samples[i], INT32_MIN, INT32_MAX, INT16_MIN, INT16_MAX));
+    }
+  }
+  int totalMs = millis() - start;
+
+  LOG_INFO("WAV", "Finished writing WAV file");
+  finishWav(totalMs);
+}
+
 void recordWavMaxRate() {
   startNewWav();
 
   unsigned long start = millis();
   unsigned long currentMs = start;
   int value = 0;
-
-  while (!wavFilled()) {  // && currentMs - start < MS_TO_SAMPLE) {
-    readAudio(&value);
-    int mappedValue = map(value, 0, 4096, 0, 65536);
-    addWavSample(mappedValue);
+  while (!wavFilled()) {
+    addWavSample(readAudio());
   }
   int totalMs = millis() - start;
 

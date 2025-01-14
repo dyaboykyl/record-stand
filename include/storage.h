@@ -4,8 +4,8 @@
 #include <WString.h>
 
 enum StorageKey {
-  WIFI_SSID,
-  WIFI_PASSWORD,
+  WIFI_SSID_KEY,
+  WIFI_PASSWORD_KEY,
 
   KEY_COUNT
 };

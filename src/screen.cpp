@@ -117,6 +117,9 @@ void lvglSetup() {
   lv_display_t *disp;
   disp = lv_display_create(DIS_WIDTH_PX, DIS_HEIGHT_PX);
   lv_display_set_flush_cb(disp, flushDisplay);
+
+  // draw_buf = (uint32_t *)ps_malloc(DRAW_BUF_SIZE);
+  LOG_INFO(TAG, (String) "draw_buf: " + (unsigned long long)(void const *)draw_buf);
   lv_display_set_buffers(disp, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
   /*Initialize the (dummy) input device driver*/
@@ -201,40 +204,6 @@ uint8_t getGreen(uint16_t color) { return ((color & 0x07e0) >> 5) << 2; }
 
 uint8_t getBlue(uint16_t color) { return (color & 0x001f) << 3; }
 
-void generateColorWheel() {
-  int width = gfx->width();
-  int height = gfx->height();
-  int half_width = width / 2;
-  int half_height = height / 2;
-  float angle;
-  uint8_t r, g, b;
-  int index, scaled_index;
-
-  for (int y = 0; y < half_height; y++) {
-    for (int x = 0; x < half_width; x++) {
-      index = y * half_width + x;
-      angle = atan2(y - half_height / 2, x - half_width / 2);
-      r = uint8_t(127.5 * (cos(angle) + 1));
-      g = uint8_t(127.5 * (sin(angle) + 1));
-      b = uint8_t(255 - (r + g) / 2);
-      uint16_t color = RGB565(r, g, b);
-
-      // Scale this pixel into 4 pixels in the full buffer
-      for (int dy = 0; dy < 2; dy++) {
-        for (int dx = 0; dx < 2; dx++) {
-          scaled_index = (y * 2 + dy) * width + (x * 2 + dx);
-          colorWheel[scaled_index] = color;
-          Pixel *pixel = &colorWheelPixels[scaled_index];
-          pixel->red = r;
-          pixel->green = g;
-          pixel->blue = b;
-          // LOG_DEBUG(TAG, (String)pixel.red + "->" + r + "(" + getRed(color) + ")");
-        }
-      }
-    }
-  }
-}
-
 // float sierra[] = {0, 0} X 5 3 2 4 5 4 2 2 3 2
 float sierraLite[] = {0, 0, .5f, .25f, .25f, 0};
 int rows = 2;
@@ -286,17 +255,6 @@ void dither(Pixel *pixels, uint16_t *buffer, int width, int height) {
   }
 }
 
-void drawColorWheel() {
-  if (colorWheel) {
-    LOG_DEBUG(TAG, (String) "1: " + colorWheelPixels[543].red);
-    generateColorWheel();
-    LOG_DEBUG(TAG, (String) "2: " + colorWheelPixels[543].red);
-    dither(colorWheelPixels, colorWheel, gfx->width(), gfx->height());
-    LOG_DEBUG(TAG, (String) "3: " + colorWheelPixels[543].red);
-    gfx->draw16bitRGBBitmap(0, 0, colorWheel, gfx->width(), gfx->height());
-  }
-}
-
 void initButtons() {
   Wire.setClock(1000000);  // speed up I2C
   if (!gfx->begin()) {
@@ -311,21 +269,18 @@ extern void buildWifiScreen();
 void initScreen() {
   LOG_INFO(TAG, "Initializing");
 
-  colorWheel = (uint16_t *)ps_malloc(gfx->width() * gfx->height() * sizeof(uint16_t));
-  colorWheelPixels = (Pixel *)ps_malloc(gfx->width() * gfx->height() * sizeof(Pixel));
-
   lvglSetup();
   LOG_INFO(TAG, "Initialization finished");
 
-  // wifi setup:
+  // // wifi setup:
+  // //
   // https://github.com/0015/ThatProject/blob/master/ESP32_LVGL/LVGL8/3_BaseProject_Network_Selector/3_BaseProject_Network_Selector.ino#L495
   background();
 
   addTitle();
   buildWifiScreen();
-  // drawColorWheel();
 
-  // makeKeyboard();
+  makeKeyboard();
 }
 
 CST_TS_Point *prevPoint = NULL;

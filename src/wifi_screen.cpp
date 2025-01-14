@@ -10,6 +10,7 @@
 #include <cstring>
 #include <thread>
 
+#include "controller.h"
 #include "network.h"
 #include "storage.h"
 #include "utils.h"
@@ -212,8 +213,7 @@ void checkConnect(lv_timer_t *timer) {
   if (status == WL_CONNECTED) {
     auto password = lv_textarea_get_text(passwordTextArea);
     if (strlen(password) > 0 && strlen(selectedSsid) > 0) {
-      writeToStorage(WIFI_SSID, selectedSsid);
-      writeToStorage(WIFI_PASSWORD, password);
+      persistWifiCredentials(selectedSsid, password);
     }
   }
 }
@@ -321,18 +321,18 @@ void startScan() {
   // sleep(1);
   LOG_INFO(TAG, "Starting scan task");
   lv_dropdown_set_text(ssidDropdown, "Scanning...");
-  setupWifi();
+  initWifi();
   scanNetworks();
   lv_timer_create(checkScan, 20, NULL);
 }
 
 void checkWifi() {
-  auto ssid = readFromStorage(WIFI_SSID);
+  auto ssid = readFromStorage(WIFI_SSID_KEY);
   if (!ssid || ssid == "") {
     return;
   }
 
-  auto password = readFromStorage(WIFI_PASSWORD);
+  auto password = readFromStorage(WIFI_PASSWORD_KEY);
   if (!password || password == "") {
     return;
   }

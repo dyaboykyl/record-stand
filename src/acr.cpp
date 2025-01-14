@@ -6,6 +6,8 @@
 #include <WiFiClientSecure.h>
 #include <acr.h>
 
+#include "network.h"
+
 #define TAG "ACR"
 #define ACR_HOST "identify-eu-west-1.acrcloud.com"
 #define ACR_ENDPOINT "/v1/identify"
@@ -27,6 +29,11 @@ String formDataItem(String name, String value) {
 }
 
 SongInfo identifySongV2(uint8_t *wavData, int size, bool local) {
+  if (!isWifiConnected()) {
+    LOG_ERROR(TAG, "Cannot identify song. Not connected to wifi");
+    return {};
+  }
+
   String bodyPart1 = formDataItem("access_key", "") + formDataItem("data_type", "audio") +
                      formDataItem("signature_version", "1") +
                      formDataItem("signature", "Ff2r6KobaCflFiQjFkG+B6utuQw=") +
@@ -46,16 +53,16 @@ SongInfo identifySongV2(uint8_t *wavData, int size, bool local) {
 
   client.addHeader("Content-Type", "multipart/form-data;boundary=\"boundary\"");
   if (body == NULL) {
-    LOG_DEBUG(TAG, "Allocating body");
+    LOG_DEBUG(TAG, (String) "Allocating body. Free PSRAM:" + ESP.getFreePsram());
     body = (uint8_t *)ps_malloc(bodySize);
     LOG_DEBUG(TAG, (String) "Body allocated. Free PSRAM:" + ESP.getFreePsram());
   }
 
-  LOG_DEBUG(TAG, "Copying part 1");
+  LOG_DEBUG(TAG, (String) "Copying part 1. size: " + bodyPart1.length());
   memcpy(body, bodyPart1.c_str(), bodyPart1.length());
-  LOG_DEBUG(TAG, "Copying wav data");
+  LOG_DEBUG(TAG, (String) "Copying wav data. size: " + size);
   memcpy(body + bodyPart1.length(), wavData, size);
-  LOG_DEBUG(TAG, "Copying part 2");
+  LOG_DEBUG(TAG, (String) "Copying part 2. Size: " + bodyPart2.length());
   memcpy(body + bodyPart1.length() + size, bodyPart2.c_str(), bodyPart2.length());
 
   int result = client.POST(body, bodySize);
