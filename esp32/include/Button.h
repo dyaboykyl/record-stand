@@ -10,10 +10,11 @@ enum State : uint8_t {
 
 class Button {
  private:
+  const char* id;
   uint8_t pin;
 
  public:
   State state;
-  Button(uint8_t pin);
+  Button(const char* id, uint8_t pin);
   bool pressed();
 };

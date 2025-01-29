@@ -1,20 +1,28 @@
 
 #include <Button.h>
+#include <EasyLogger.h>
 #include <screen.h>
 
-Button::Button(uint8_t pin) {
+#define TAG "Button"
+
+Button::Button(const char* id, uint8_t pin) {
+  this->id = id;
   this->pin = pin;
-  state = State::Low;
+  state = State::High;
 }
 
 bool Button::pressed() {
-    if (expander->digitalRead(pin) == Low) {
+  if (expander->digitalRead(pin) == Low) {
     if (state == High) {
       state = Low;
-      return true;
+      LOG_INFO(TAG, String(id) + " pressed");
     }
   } else {
-    state = High;
+    if (state == Low) {
+      LOG_INFO(TAG, String(id) + " released");
+      state = High;
+      return true;
+    }
   }
   return false;
 }

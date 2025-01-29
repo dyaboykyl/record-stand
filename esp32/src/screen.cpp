@@ -14,7 +14,7 @@
 
 #include "utils.h"
 
-#define TAG "SCREEN"
+#define TAG "Screen"
 
 // 2.1" 480x480 round display use CST826 touchscreen with I2C Address at 0x15
 #define I2C_TOUCH_ADDR 0x15  // often but not always 0x48!
@@ -50,8 +50,8 @@ uint16_t *colorWheel;
 Pixel *colorWheelPixels;
 bool touchOK;
 
-Button button1(PCA_BUTTON_DOWN);
-Button button2(PCA_BUTTON_UP);
+Button button1("DOWN", PCA_BUTTON_DOWN);
+Button button2("UP", PCA_BUTTON_UP);
 
 #define DRAW_BUF_SIZE (DIS_WIDTH_PX * DIS_HEIGHT_PX / 10 * (LV_COLOR_DEPTH / 8))
 uint32_t draw_buf[DRAW_BUF_SIZE / 4];
