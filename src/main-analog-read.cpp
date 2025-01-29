@@ -18,9 +18,7 @@ void setup() {
   // adc1_config_width(ADC_WIDTH_BIT_12);
   // adc2_config_channel_atten(ADC_CHANNEL, ADC_ATTEN_DB_11);
 
-  initStorage();
-  initButtons();
-  initScreen();
+  initAll();
   LOG_INFO(TAG, (String) "[APP] Free memory bytes: " + esp_get_free_heap_size());
 }
 
@@ -35,12 +33,6 @@ void runFilter(Filter filter, short value) {
   filter.avg = filter.avg * filter.alpha + (1 - filter.alpha) * value;
   Serial.print((String) ">" + filter.alpha + ":");
   Serial.println(value - filter.avg);
-}
-
-void runLowPass(Filter filter, short value) {
-  filter.prev = filter.alpha * value + (1 - filter.alpha) * filter.prev;
-  Serial.print((String) ">" + filter.alpha + ":");
-  Serial.println(filter.prev);
 }
 
 Filter filters[] = {
@@ -60,13 +52,45 @@ int samplesPerSecond = 0;
 int sampleCount = 0;
 void loop() {
   if (buttonOnePressed()) {
-    initAudio();
-    // LOG_INFO(TAG, (String) "Reading: " + reading);
-    // reading = !reading;
+    LOG_INFO(TAG, (String) "Reading: " + reading);
+    reading = !reading;
   }
 
   if (buttonTwoPressed()) {
-    initScreen();
+    // connectToSavedWifi();
+
+    int32_t int32 = (-0x7ab290 << 8) + 2656;
+    Serial.print("int32 ");
+    Serial.print(int32);
+    Serial.print(": ");
+    Serial.println(int32, 2);
+
+    int32_t int24 = int32 >> 8;
+    Serial.print("int24 ");
+    Serial.print(int24);
+    Serial.print(": ");
+    Serial.println(int24, 2);
+
+    int16_t int24Scaled16 = ((float)int24 / 0x7fffff) * INT16_MAX;
+    Serial.print("int24Scaled16 ");
+    Serial.print(int24Scaled16);
+    Serial.print(": ");
+    Serial.println(int24Scaled16, 2);
+
+    int16_t int24Mapped16 = map(int24, -0x7fffff - 1, 0x7fffff, INT16_MIN, INT16_MAX);
+    Serial.print("int24Shifted8Mapped16 ");
+    Serial.print(int24Mapped16);
+    Serial.print(": ");
+    Serial.println(int24Mapped16, 2);
+
+    Serial.print("int24 percent ");
+    Serial.println((double)int24 / 0x7fffff);
+
+    Serial.print("int24Scaled16 percent ");
+    Serial.println((double)int24Scaled16 / INT16_MAX);
+
+    Serial.print("int24Mapped16 percent ");
+    Serial.println((double)int24Mapped16 / INT16_MAX);
   }
 
   if (reading) {
@@ -82,12 +106,12 @@ void loop() {
       sampleCount = 0;
       last = millis();
     }
-    // for (int i = 0; i < audioData->size; i++) {
-    //   Serial.print(">Raw:");
-    //   Serial.println(audioData->samples[i]);
-    //   Serial.print(">Size:");
-    //   Serial.println(audioData->size);
-    // }
+    for (int i = 0; i < audioData->size; i++) {
+      Serial.print(">Raw:");
+      Serial.println(audioData->samples[i]);
+      //   Serial.print(">Size:");
+      //   Serial.println(audioData->size);
+    }
     Serial.print(">Sample Rate:");
     Serial.println(samplesPerSecond);
   }

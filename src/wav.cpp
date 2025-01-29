@@ -4,7 +4,9 @@
 
 #include "audio.h"
 
-#define MAX_WAV_SAMPLES (44100 * 5)
+#define TAG "WAV"
+
+#define MAX_WAV_SAMPLES (44100 * 10)
 #define WAV_HEADER_SIZE 44
 #define WAV_RIFF_OFFSET 8
 
@@ -16,6 +18,23 @@ static int16_t *wavSampleData;
 
 wav_header_t WAV_HEADER_TEMPLATE;
 unsigned int currentSampleIndex;
+
+struct Filter {
+  float alpha = 0;
+  short prev = 0;
+  short avg = 0;
+  Filter(float a) : alpha(a), avg(0) {}
+};
+
+short runLowPass(Filter filter, short value) {
+  filter.prev = filter.alpha * value + (1 - filter.alpha) * filter.prev;
+  return filter.prev;
+}
+
+short runHighPass(Filter filter, short value) {
+  filter.prev = value - filter.alpha * value + filter.alpha * filter.prev;
+  return filter.prev;
+}
 
 bool allocateWavSpace() {
   LOG_INFO("WAV", "Allocating space");
@@ -54,13 +73,23 @@ void recordWavAtRate(int rate) {
 void recordWavFromI2S() {
   startNewWav();
 
-  unsigned long start = millis();
-  unsigned long currentMs = start;
   int value = 0;
+  auto low = Filter(.2);
+  auto high = Filter(.9);
+
+  // flush initial samples
+  LOG_INFO(TAG, "Flushing initial samples");
+  for (int i = 0; i < 100; i++) {
+    readI2sAudio();
+  }
+
+  LOG_INFO(TAG, "Recording");
+  unsigned long start = millis();
   while (!wavFilled()) {
     auto audioData = readI2sAudio();
     for (int i = 0; i < audioData->size && !wavFilled(); i++) {
-      addWavSample(map(audioData->samples[i], INT32_MIN, INT32_MAX, INT16_MIN, INT16_MAX));
+      addWavSample(audioData->samples[i]);
+      // addWavSample(runHighPass(high, runLowPass(low, audioData->samples[i])) * 32);
     }
   }
   int totalMs = millis() - start;
