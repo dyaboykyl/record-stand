@@ -10,8 +10,8 @@
 
 #define LABEL "Main"
 
-#define SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
-#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+#define SERVICE_UUID "Identify"     // 2de7d2f2-0000-1000-8000-00805f9b34fb
+#define CHARACTERISTIC_UUID "Song"  // 0000c870-0000-1000-8000-00805f9b34fb
 
 BLEServer *pServer = NULL;
 
@@ -52,7 +52,7 @@ void setup() {
   initLogging();
   initButtons();
 
-  BLEDevice::init("MyESP32");
+  BLEDevice::init("Record Stand");
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new ServerCallbacks());
   BLEService *pService = pServer->createService(SERVICE_UUID);

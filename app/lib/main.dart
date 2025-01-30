@@ -6,12 +6,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:record_stand_app/connection_store.dart';
+import 'package:record_stand_app/home_screen.dart';
 
-import 'screens/bluetooth_off_screen.dart';
-import 'screens/scan_screen.dart';
+import 'example/screens/bluetooth_off_screen.dart';
+
+final connectionStore = ConnectionStore();
 
 void main() {
   FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
+  connectionStore.init();
   runApp(const FlutterBlueApp());
 }
 
@@ -51,7 +55,7 @@ class _FlutterBlueAppState extends State<FlutterBlueApp> {
   @override
   Widget build(BuildContext context) {
     Widget screen = _adapterState == BluetoothAdapterState.on
-        ? const ScanScreen()
+        ? HomeScreen()
         : BluetoothOffScreen(adapterState: _adapterState);
 
     return MaterialApp(
