@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#define TAG "WIFI"
+#define LABEL "WIFI"
 
 auto ssids = std::vector<String>();
 void setSsids(int count) {
@@ -107,9 +107,9 @@ bool checkWifiScan() {
   }
 
   if (result == WIFI_SCAN_FAILED || result < 0) {
-    LOG_ERROR(TAG, (String) "Couldn't get networks: " + result);
-    // WiFi.scanNetworks(true);
-    // handle
+    LOG_ERROR(LABEL, "Couldn't get networks: " << result);
+    //  WiFi.scanNetworks(true);
+    //  handle
     return false;
   }
 
@@ -119,16 +119,16 @@ bool checkWifiScan() {
 }
 
 void scanNetworks() {
-  LOG_DEBUG(TAG, "Scanning");
+  LOG_DEBUG(LABEL, "Scanning");
   bool async = true;
   int result = WiFi.scanNetworks(async);
   if (result == WIFI_SCAN_FAILED) {
-    LOG_ERROR(TAG, "Failed to scan");
-    // handle
+    LOG_ERROR(LABEL, "Failed to scan");
+    //  handle
   }
 
   if (result >= 0) {
-    LOG_INFO(TAG, "Scan already finished");
+    LOG_INFO(LABEL, "Scan already finished");
     setSsids(result);
   }
 }
@@ -137,26 +137,26 @@ std::vector<String>* getNetworks() { return &ssids; }
 
 void connectToWifi(const char* ssid, const char* password, bool connect) {
   // if (!WiFi.mode(WIFI_STA)) {
-  //   LOG_ERROR(TAG, "Failed to set wifi mode");
+  //   //LOG_ERROR(LABEL, "Failed to set wifi mode");
   //   return;
   // }
 
   if (WiFi.begin(ssid, password) == WL_CONNECT_FAILED) {
-    LOG_ERROR(TAG, "Failed to connect to wifi");
+    LOG_ERROR(LABEL, "Failed to connect to wifi");
     return;
   }
 
-  LOG_INFO(TAG, (String) "Connecting to " + ssid);
+  LOG_INFO(LABEL, "Connecting to " << ssid);
   if (connect) {
     auto last = millis();
     while (!isWifiConnected()) {
       delay(5);
       if (millis() - last > 500) {
-        LOG_DEBUG(TAG, (String) "WIFI status: " + WiFi.status());
+        LOG_DEBUG(LABEL, "WIFI status: " << WiFi.status());
         last = millis();
       }
       // Serial.print(".");
     }
-    LOG_INFO(TAG, "Connected");
+    LOG_INFO(LABEL, "Connected");
   }
 }

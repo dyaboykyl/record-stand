@@ -1,10 +1,11 @@
 
+#include <Arduino.h>
 #include <EasyLogger.h>
 #include <wav.h>
 
 #include "audio.h"
 
-#define TAG "WAV"
+#define LABEL "WAV"
 
 #define MAX_WAV_SAMPLES (44100 * 10)
 #define WAV_HEADER_SIZE 44
@@ -40,7 +41,7 @@ bool allocateWavSpace() {
   LOG_INFO("WAV", "Allocating space");
   wavData = (int16_t *)ps_malloc(maxWavFileSize);
   wavSampleData = (int16_t *)((char *)wavData + WAV_HEADER_SIZE);
-  LOG_INFO("WAV", (String) "Max sample index: " + (maxWavFileSize / sizeof(int16_t)));
+  LOG_INFO("WAV", "Max sample index: " << (maxWavFileSize / sizeof(int16_t)));
   return true;
 }
 
@@ -78,12 +79,12 @@ void recordWavFromI2S() {
   auto high = Filter(.9);
 
   // flush initial samples
-  LOG_INFO(TAG, "Flushing initial samples");
+  LOG_INFO(LABEL, "Flushing initial samples");
   for (int i = 0; i < 100; i++) {
     readI2sAudio();
   }
 
-  LOG_INFO(TAG, "Recording");
+  LOG_INFO(LABEL, "Recording");
   unsigned long start = millis();
   while (!wavFilled()) {
     auto audioData = readI2sAudio();
@@ -122,7 +123,7 @@ void startNewWav() {
 
 void addWavSample(int16_t sample) {
   if (!wavFilled()) {
-    // LOG_INFO("WAV", (String) "Current sample index: " + currentSampleIndex);
+    // //LOG_INFO("WAV", "Current sample index: " << currentSampleIndex);
     wavSampleData[currentSampleIndex++] = sample;
   }
 }
@@ -136,19 +137,20 @@ void finishWav(int totalMs) {
   currentHeader->wav_size = WAV_HEADER_SIZE + currentHeader->data_bytes - WAV_RIFF_OFFSET;
   currentHeader->sample_rate = (currentSampleIndex + 1) * 1000 / totalMs;
   currentHeader->byte_rate = currentHeader->sample_rate * 2;
-  LOG_INFO("WAV", (String) "totalMs: " + totalMs + " sampleCount: " + currentSampleIndex +
-                      " dataBytes: " + currentHeader->data_bytes + " wavSize: " +
-                      currentHeader->wav_size + " sampleRate: " + currentHeader->sample_rate +
-                      " byteRate: " + currentHeader->byte_rate);
+  LOG_INFO(LABEL, "totalMs: " << totalMs << " sampleCount: " << currentSampleIndex
+                              << " dataBytes: " << currentHeader->data_bytes
+                              << " wavSize: " << currentHeader->wav_size
+                              << " sampleRate: " << currentHeader->sample_rate
+                              << " byteRate: " << currentHeader->byte_rate);
 
   uint64_t sum = 0;
   for (int i = 0; i <= currentSampleIndex; i++) {
     sum += wavData[currentSampleIndex];
   }
   uint16_t average = sum / currentSampleIndex;
-  LOG_INFO("WAV", (String) "Sample statistics: sum=" + sum + " avg=" + average);
-  // writeWavFileToSerial(WAV_HEADER_SIZE);
-  // Serial.println();
+  LOG_INFO(LABEL, "Sample statistics: sum=" << sum << " avg=" << average);
+  //  writeWavFileToSerial(WAV_HEADER_SIZE);
+  //  Serial.println();
 }
 
 void writeWavFileToSerial(int size) {
@@ -158,7 +160,7 @@ void writeWavFileToSerial(int size) {
   Serial.println("WAV_FILE");
   delay(500);
   for (int i = 0; i < sizeToWrite; i++) {
-    if (wavBytes[i] <= 15) Serial << "0";
+    if (wavBytes[i] <= 15) Serial.print("0");
     Serial.print(wavBytes[i], HEX);
     Serial.print(" ");
   }

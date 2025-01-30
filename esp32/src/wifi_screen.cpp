@@ -17,7 +17,7 @@
 
 using namespace std;
 
-#define TAG "WIFI_SCREEN"
+#define LABEL "WIFI_SCREEN"
 
 lv_obj_t *keyboard;
 lv_obj_t *ssidDropdown;
@@ -35,11 +35,11 @@ void updateConnectButton() {
   if (password == NULL || strcmp(password, "") == 0 || strcmp(selectedSsid, "") == 0) {
     disable(connectButton);
     lv_obj_set_style_bg_color(connectButton, DISABLED_COLOR, 0);
-    LV_LOG_USER("Connect button not ready");
+    // LV_LOG_USER("Connect button not ready");
   } else {
     enable(connectButton);
     lv_obj_set_style_bg_color(connectButton, lv_color_make(0, 0, 255), 0);
-    LV_LOG_USER("Connect button ready!");
+    // LV_LOG_USER("Connect button ready!");
   }
 }
 
@@ -49,7 +49,7 @@ void keyboardEventHandler(lv_event_t *e) {
     return;
   }
 
-  LV_LOG_USER("Keyboard event: %i", code);
+  // LV_LOG_USER("Keyboard event: %i", code);
   auto btnId = lv_keyboard_get_selected_button(keyboard);
   if (btnId == LV_BUTTONMATRIX_BUTTON_NONE) {
     return;
@@ -111,7 +111,7 @@ static void ssidDropdownEventHandler(lv_event_t *e) {
   if (code == LV_EVENT_VALUE_CHANGED) {
     lv_dropdown_get_selected_str(obj, selectedSsid, sizeof(selectedSsid));
     lv_dropdown_set_text(ssidDropdown, NULL);
-    LV_LOG_USER("Option: %s", selectedSsid);
+    // LV_LOG_USER("Option: %s", selectedSsid);
     updateConnectButton();
     enable(passwordTextArea);
     lv_obj_set_style_bg_color(passwordTextArea, lv_color_white(), 0);
@@ -171,7 +171,7 @@ void passwordCallback(lv_event_t *e) {
       show(keyboard);
     }
   } else if (code == LV_EVENT_READY) {
-    LV_LOG_USER("Ready, current text: %s", lv_textarea_get_text(ta));
+    // LV_LOG_USER("Ready, current text: %s", lv_textarea_get_text(ta));
   }
 }
 
@@ -194,9 +194,9 @@ void buildPasswordInput() {
 }
 
 void checkConnect(lv_timer_t *timer) {
-  // LOG_DEBUG(TAG, "Checking scan");
+  // //LOG_DEBUG(LABEL, "Checking scan");
   auto status = getWifiStatus();
-  // LOG_DEBUG(TAG, (String) "checkConnect: " + status);
+  // //LOG_DEBUG(LABEL, "checkConnect: " << status);
   if (status == WL_IDLE_STATUS) {
     return;
   }
@@ -205,7 +205,7 @@ void checkConnect(lv_timer_t *timer) {
     return;
   }
 
-  LOG_DEBUG(TAG, (String) "Connecting finished: " + status);
+  LOG_DEBUG(LABEL, "Connecting finished: " << status);
   lv_label_set_text(statusLabel, status == WL_CONNECTED ? "Connected" : "Failed to connect");
   lv_timer_delete(timer);
   hide(loadingSpinner);
@@ -225,7 +225,7 @@ void tryConnectToWifi(String ssid = "", String password = "") {
 
   auto ssidToUse = ssid == "" ? selectedSsid : ssid.c_str();
   auto passwordToUse = password == "" ? lv_textarea_get_text(passwordTextArea) : password.c_str();
-  LOG_DEBUG(TAG, (String) "Connecting to " + selectedSsid + " Password: " + password);
+  LOG_DEBUG(LABEL, "Connecting to " << selectedSsid << " Password: " << password);
   connectToWifi(ssidToUse, passwordToUse);
   connectionCheckAttempts = 0;
   lv_timer_create(checkConnect, 20, NULL);
@@ -235,7 +235,7 @@ void connectButtonCallback(lv_event_t *e) {
   lv_event_code_t code = lv_event_get_code(e);
 
   if (code == LV_EVENT_CLICKED) {
-    LV_LOG_USER("Clicked");
+    // LV_LOG_USER("Clicked");
     tryConnectToWifi();
   }
 }
@@ -286,15 +286,15 @@ void buildSpinner() {
 
 void setSsidOptions() {
   auto ssids = getNetworks();
-  // LOG_DEBUG(TAG, (String) "Networks: " + ssids);
+  // //LOG_DEBUG(LABEL, "Networks: " << ssids);
 
   String options = "";
   for (int i = 0; i < ssids->size() - 1; i++) {
     options += ssids->at(i) + "\n";
   }
   options += ssids->at(ssids->size() - 1);
-  LOG_DEBUG(TAG, options);
-  // return;
+  LOG_DEBUG(LABEL, options);
+  //  return;
 
   lv_dropdown_set_options(ssidDropdown, options.c_str());
   lv_dropdown_set_selected(ssidDropdown, 1);
@@ -305,12 +305,12 @@ void setSsidOptions() {
 }
 
 void checkScan(lv_timer_t *timer) {
-  // LOG_DEBUG(TAG, "Checking scan");
+  // //LOG_DEBUG(LABEL, "Checking scan");
   if (checkWifiScan()) {
     return;
   }
 
-  LOG_DEBUG(TAG, "Scan complete");
+  LOG_DEBUG(LABEL, "Scan complete");
   lv_timer_delete(timer);
   setSsidOptions();
 }
@@ -319,7 +319,7 @@ void startScan() {
   // initiate scan
   // lv_label_set_text(statusLabel, "Scanning")
   // sleep(1);
-  LOG_INFO(TAG, "Starting scan task");
+  LOG_INFO(LABEL, "Starting scan task");
   lv_dropdown_set_text(ssidDropdown, "Scanning...");
   initWifi();
   scanNetworks();

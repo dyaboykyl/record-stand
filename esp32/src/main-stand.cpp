@@ -37,7 +37,7 @@ bool taskRunning = false;
 // functions
 
 void drawText(String text) {
-  LOG_DEBUG("MAIN", (String) "Drawing text: " + text);
+  LOG_DEBUG("MAIN", "Drawing text: " << text);
   sprite.fillSprite(TFT_BLACK);
   sprite.setTextSize(2);
   sprite.drawString(text, 240, 240);
@@ -79,7 +79,7 @@ void wavTask(void* params) {
   SongInfo result = identifySongV2(getWavData(), getWavFileSize(), true);
   LOG_INFO("MAIN", "Uploaded song");
   SongInfo result2 = identifySongV2(getWavData(), getWavFileSize());
-  LOG_INFO("MAIN", (String) "ACR server: Artist: " + result2.artist + ",Song: " + result2.song);
+  LOG_INFO("MAIN", "ACR server: Artist: " + result2.artist + ",Song: " << result2.song);
   displaySongInfo(result);
 
   taskRunning = false;
@@ -112,12 +112,12 @@ void setup() {
   sprite.setTextDatum(MC_DATUM);
   sprite.setTextColor(TFT_WHITE);
 
-  LOG_INFO("INIT", (String) "PSRAM found:" + psramFound());
+  LOG_INFO("INIT", "PSRAM found:" << psramFound());
   if (psramFound()) {
-    LOG_INFO("INIT", (String) "Total PSRAM:" + ESP.getPsramSize());
-    LOG_INFO("INIT", (String) "Free PSRAM:" + ESP.getFreePsram());
+    LOG_INFO("INIT", "Total PSRAM:" << ESP.getPsramSize());
+    LOG_INFO("INIT", "Free PSRAM:" << ESP.getFreePsram());
     allocateWavSpace();
-    LOG_INFO("INIT", (String) "Free PSRAM:" + ESP.getFreePsram());
+    LOG_INFO("INIT", "Free PSRAM:" << ESP.getFreePsram());
   }
 
   analogReadResolution(16);
@@ -126,7 +126,7 @@ void setup() {
 }
 
 void loop() {
-  // LOG_INFO("LOOP", "looping...");
+  // //LOG_INFO("LOOP", "looping...");
   if (!taskRunning) {
     if (!expander->digitalRead(PCA_BUTTON_DOWN)) {
       LOG_INFO("LOOP", "BUTTON_ONE_PRESSED");
@@ -144,7 +144,7 @@ void loop() {
       taskRunning = true;
       drawText("Identifying...");
       SongInfo result = identifySongV2(getWavData(), getWavFileSize());
-      LOG_INFO("MAIN", (String) "Artist: " + result.artist + ", Song: " + result.song);
+      LOG_INFO("MAIN", "Artist: " + result.artist + ", Song: " << result.song);
       displaySongInfo(result);
       // writeWavFileToSerial();
       taskRunning = false;

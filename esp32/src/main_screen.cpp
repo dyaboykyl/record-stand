@@ -80,7 +80,7 @@ void actionLedAnimationCallback(void *actionLed, int32_t value) {
 }
 
 void actionAnimation(lv_obj_t *actionLed) {
-  LV_LOG_USER("Creating LED animation");
+  // LV_LOG_USER("Creating LED animation");
   lv_anim_init(&listeningAnimation);
   // lv_anim_set_exec_cb(&animation, scroll_anim_y_cb);
   lv_anim_set_duration(&listeningAnimation, 500);

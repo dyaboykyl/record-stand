@@ -6,7 +6,7 @@
 #include <driver/i2s.h>
 
 #define LOG_LEVEL LOG_LEVEL_NOTICE
-#define TAG "Audio"
+#define LABEL "Audio"
 #define SOC_I2S_SUPPORTS_ADC true
 
 #define SAMPLE_BUFFER_SIZE 1024
@@ -47,16 +47,16 @@ AudioData i2sData;
 int32_t* rawData;
 
 void initAudio() {
-  LOG_INFO(TAG, "Initializing audio");
-  // adc1_config_width(ADC_WIDTH_BIT_12);
-  // adc2_config_channel_atten(ADC2_CHANNEL_5, ADC_ATTEN_DB_11);
-  // analogReadResolution(16);
+  LOG_INFO(LABEL, "Initializing audio");
+  //  adc1_config_width(ADC_WIDTH_BIT_12);
+  //  adc2_config_channel_atten(ADC2_CHANNEL_5, ADC_ATTEN_DB_11);
+  //  analogReadResolution(16);
   auto err = i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
-  LOG_INFO(TAG, (String) "Driver result: " + err + ". Setting I2S pins");
+  LOG_INFO(LABEL, "Driver result: " + err << ". Setting I2S pins");
   i2s_set_pin(I2S_NUM_0, &i2sPins);
   i2sData = {.samples = (int16_t*)ps_malloc(sizeof(int16_t) * SAMPLE_BUFFER_SIZE), .size = 0};
   rawData = (int32_t*)ps_malloc(4 * SAMPLE_BUFFER_SIZE);
-  LOG_INFO(TAG, "Audio initialized");
+  LOG_INFO(LABEL, "Audio initialized");
 }
 
 // start a task to read samples from I2S
@@ -99,7 +99,7 @@ AudioData* readI2sAudio() {
   i2s_read(I2S_NUM_0, rawData, 4 * SAMPLE_BUFFER_SIZE, &bytes_read, portMAX_DELAY);
   int samples_read = bytes_read / 4;
   if (samples_read != SAMPLE_BUFFER_SIZE) {
-    LOG_ERROR(TAG, (String) "Read " + samples_read + " samples instead of " + SAMPLE_BUFFER_SIZE);
+    LOG_ERROR(LABEL, "Read " << samples_read << " samples instead of " << SAMPLE_BUFFER_SIZE);
   }
   for (int i = 0; i < samples_read; i++) {
     i2sData.samples[i] = ((float)(rawData[i] >> 8) / 0x7fffff) * INT16_MAX;
@@ -110,13 +110,13 @@ AudioData* readI2sAudio() {
 }
 
 void calculateNoiseOffset() {
-  LOG_INFO(TAG, "Calculating noise offset");
+  LOG_INFO(LABEL, "Calculating noise offset");
   int sum = 0;
   for (int i = 0; i < NOISE_SAMPLE_SIZE; i++) {
     sum += readAudio(false, false);
   }
   noiseOffset = sum / NOISE_SAMPLE_SIZE;
-  LOG_INFO(TAG, (String) "Noise offset: " + noiseOffset);
+  LOG_INFO(LABEL, "Noise offset: " << noiseOffset);
 }
 
 int getNoiseOffset() { return noiseOffset; }

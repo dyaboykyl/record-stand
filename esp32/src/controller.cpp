@@ -2,6 +2,7 @@
 #include "controller.h"
 
 #include <Arduino.h>
+#include <EasyLogger.h>
 
 #include "acr.h"
 #include "audio.h"
@@ -10,6 +11,33 @@
 #include "secrets.h"
 #include "storage.h"
 #include "wav.h"
+
+#define LABEL "Controller"
+
+int vprintfSerial(const char* fmt, va_list args) {
+  char log_print_buffer[256];
+  vsprintf(log_print_buffer, fmt, args);
+
+  Serial.print(log_print_buffer);
+
+  return 0;
+}
+
+void initLogging() {
+  Wire.begin();
+  Serial.begin(115200);
+
+  esp_log_set_vprintf(vprintfSerial);
+  esp_log_level_set("*", ESP_LOG_DEBUG);
+
+  Serial.setDebugOutput(true);
+
+  while (!Serial) {
+    delay(10);
+  }
+
+  LOG_INFO(LABEL, "Logging ready");
+}
 
 void initAll() {
   initStorage();
@@ -38,8 +66,8 @@ void recordWavAndSend(void* params) {
 }
 
 void runTask(TaskFunction_t task, int core) {
-  xTaskCreatePinnedToCore(task, ((String) "Task" + core).c_str(), 10000, NULL, 1,
-                          core == 0 ? &taskHandle0 : &taskHandle1, core);
+  xTaskCreatePinnedToCore(task, "Task1", 10000, NULL, 1, core == 0 ? &taskHandle0 : &taskHandle1,
+                          core);
 }
 
 void runWavTask() { runTask(recordWavAndSend, 1); }

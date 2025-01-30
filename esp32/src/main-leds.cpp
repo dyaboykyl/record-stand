@@ -15,18 +15,18 @@
 #include "screen.h"
 
 #define LOG_LEVEL LOG_LEVEL_NOTICE
-#define TAG "Main"
+#define LABEL "Main"
 
 #define LED_COUNT 6
 
 bool running = true;
 
 void setup(void) {
-  esp_log_level_set("*", ESP_LOG_INFO);
+  esp_log_level_set("*", ESP_//LOG_INFO);
   Serial.begin(115200);
   delay(200);
 
-  LOG_INFO(TAG, "Beginning");
+  //LOG_INFO(LABEL, "Beginning");
   setupLeds(LED_COUNT);
   initButtons();
 }
@@ -36,7 +36,7 @@ extern void turnOffLeds();
 void loop() {
   if (buttonOnePressed()) {
     running = !running;
-    LOG_INFO(TAG, (String) "Running: " + running);
+    LOG_INFO(LABEL, "Running: " << running);
     if (!running) {
       turnOffLeds();
     }
@@ -48,7 +48,7 @@ void loop() {
   }
 
   delay(5);
-  // LOG_INFO(TAG, "Looping...");
+  // //LOG_INFO(LABEL, "Looping...");
   if (running) {
     onLoopLeds();
   }

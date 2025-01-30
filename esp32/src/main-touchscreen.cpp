@@ -15,15 +15,15 @@
 #include "storage.h"
 
 #define LOG_LEVEL LOG_LEVEL_NOTICE
-#define TAG "Main-TS"
+#define LABEL "Main-TS"
 
 void setup(void) {
-  esp_log_level_set("*", ESP_LOG_INFO);
+  esp_log_level_set("*", ESP_//LOG_INFO);
   Serial.begin(115200);
   delay(200);
   // while (!Serial) delay(100);
 
-  LOG_INFO(TAG, "Beginning");
+  //LOG_INFO(LABEL, "Beginning");
   initStorage();
   initButtons();
   initScreen();
@@ -48,5 +48,5 @@ void loop() {
   delay(5);           /* let this time pass */
   // reactToTouch();
   // delay(1);
-  // LOG_INFO(TAG, "Looping...");
+  // //LOG_INFO(LABEL, "Looping...");
 }

@@ -14,7 +14,7 @@
 
 #include "utils.h"
 
-#define TAG "Screen"
+#define LABEL "Screen"
 
 // 2.1" 480x480 round display use CST826 touchscreen with I2C Address at 0x15
 #define I2C_TOUCH_ADDR 0x15  // often but not always 0x48!
@@ -67,11 +67,11 @@ void lvglLog(lv_log_level_t level, const char *buf) {
 
 void setupTouch() {
   if (!cst_ctp.begin(&Wire, I2C_TOUCH_ADDR)) {
-    LOG_WARNING(TAG, "No Touchscreen found at address 0x");
+    LOG_WARNING(LABEL, "No Touchscreen found at address 0x");
     Serial.println(I2C_TOUCH_ADDR, HEX);
     touchOK = false;
   } else {
-    LOG_INFO(TAG, "CST826 Touchscreen found");
+    LOG_INFO(LABEL, "CST826 Touchscreen found");
     touchOK = true;
   }
 }
@@ -119,7 +119,7 @@ void lvglSetup() {
   lv_display_set_flush_cb(disp, flushDisplay);
 
   // draw_buf = (uint32_t *)ps_malloc(DRAW_BUF_SIZE);
-  LOG_INFO(TAG, (String) "draw_buf: " + (unsigned long long)(void const *)draw_buf);
+  LOG_INFO(LABEL, "draw_buf: " << (unsigned long long)(void const *)draw_buf);
   lv_display_set_buffers(disp, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
   /*Initialize the (dummy) input device driver*/
@@ -217,7 +217,7 @@ uint8_t ditherColor(uint8_t (*colorExtractor)(uint16_t), uint16_t rgb565, uint8_
                     float frac) {
   uint8_t color = colorExtractor(rgb565);
   int error = originalColor - color;
-  // LOG_DEBUG(TAG, (String) "error: " + (error));
+  // //LOG_DEBUG(LABEL, "error: " << (error));
   return (uint8_t)round(originalColor + (error * frac));
 }
 
@@ -230,11 +230,11 @@ void propagateError(uint16_t color, int x, int y, int dx, int dy, float frac, Pi
   }
 
   Pixel *pixel = &pixels[y2 * width + x2];
-  // LOG_DEBUG(TAG, (String) "Before: " + (pixel->red));
+  // //LOG_DEBUG(LABEL, "Before: " << (pixel->red));
   pixel->red = ditherColor(getRed, color, pixel->red, frac);
   pixel->green = ditherColor(getGreen, color, pixel->green, frac);
   pixel->blue = ditherColor(getBlue, color, pixel->blue, frac);
-  // LOG_DEBUG(TAG, (String) "After: " + (pixel->red));
+  // //LOG_DEBUG(LABEL, "After: " << (pixel->red));
 }
 
 void dither(Pixel *pixels, uint16_t *buffer, int width, int height) {
@@ -243,7 +243,8 @@ void dither(Pixel *pixels, uint16_t *buffer, int width, int height) {
       int index = y * width + x;
       Pixel pixel = pixels[index];
       uint16_t color = RGB565(pixel.red, pixel.green, pixel.blue);
-      // LOG_DEBUG(TAG, (String)pixel.red + "->" + getRed(color) + "(" + getRed(buffer[index]) +
+      // //LOG_DEBUG(LABEL, (String)pixel.red + "->" + getRed(color) + "(" + getRed(buffer[index])
+      // <<
       // ")");
       buffer[index] = color;
 
@@ -256,21 +257,21 @@ void dither(Pixel *pixels, uint16_t *buffer, int width, int height) {
 }
 
 void initButtons() {
-  Wire.setClock(1000000);  // speed up I2C
-  if (!gfx->begin()) {
-    LOG_ERROR(TAG, "gfx->begin() failed!");
-  }
   expander->pinMode(PCA_TFT_BACKLIGHT, OUTPUT);
   expander->digitalWrite(PCA_TFT_BACKLIGHT, backlightState);
-  LOG_INFO(TAG, "Peripherals initialized");
+  LOG_INFO(LABEL, "Buttons initialized");
 }
 
 extern void buildWifiScreen();
 void initScreen() {
-  LOG_INFO(TAG, "Initializing");
+  LOG_INFO(LABEL, "Initializing");
 
+  Wire.setClock(1000000);  // speed up I2C
+  if (!gfx->begin()) {
+    LOG_ERROR(LABEL, "gfx->begin() failed!");
+  }
   lvglSetup();
-  LOG_INFO(TAG, "Initialization finished");
+  LOG_INFO(LABEL, "Initialization finished");
 
   // // wifi setup:
   // //
@@ -297,7 +298,7 @@ void reactToTouch() {
 
 void writeBacklight(uint8_t state) {
   backlightState = state;
-  LOG_INFO(TAG, (String) "Writing backlight: " + state);
+  LOG_INFO(LABEL, "Writing backlight: " << state);
   expander->digitalWrite(PCA_TFT_BACKLIGHT, backlightState);
 }
 

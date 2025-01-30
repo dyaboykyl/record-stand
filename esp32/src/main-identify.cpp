@@ -19,21 +19,21 @@
 #include "wav.h"
 
 #define LOG_LEVEL LOG_LEVEL_NOTICE
-#define TAG "Main-Identify"
+#define LABEL "Main-Identify"
 
 #ifdef CORE_DEBUG_LEVEL
 #undef CORE_DEBUG_LEVEL
 #endif
 
 #define CORE_DEBUG_LEVEL 5
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#define LOG_LOCAL_LEVEL ESP_ LOG_DEBUG
 
 void setup(void) {
-  esp_log_level_set("*", ESP_LOG_DEBUG);
+  esp_log_level_set("*", ESP_//LOG_DEBUG);
   Serial.begin(115200);
   delay(200);
 
-  LOG_INFO(TAG, "Beginning");
+  LOG_INFO(LABEL, "Beginning");
   initAll();
 }
 

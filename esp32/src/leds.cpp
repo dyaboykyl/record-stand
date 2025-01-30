@@ -4,7 +4,7 @@
 #include <EasyLogger.h>
 #include <FastLED.h>
 
-#define TAG "Leds"
+#define LABEL "Leds"
 
 #define BRIGHTNESS 255
 #define LED_PIN MOSI
@@ -46,7 +46,7 @@ void setupLeds(int totalLeds) {
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, ledCount).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
   turnOffLeds();
-  LOG_INFO(TAG, "Setup complete");
+  LOG_INFO(LABEL, "Setup complete");
 }
 
 void onLoopLeds() {
@@ -55,7 +55,7 @@ void onLoopLeds() {
     for (int i = 0; i < ledCount; i++) {
       leds[i] = CRGB::Black;
     }
-    LOG_DEBUG(TAG, (String) "Updating at offset " + offset);
+    LOG_DEBUG(LABEL, "Updating at offset " << offset);
     ledUpdateMillis = millis();
     for (int i = 0; i < ledCount; i++) {
       leds[i] = scroll((i + offset) % ledCount);

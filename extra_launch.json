@@ -1,0 +1,7 @@
+        {
+          "name": "flutter",
+          "cwd": "app",
+          "request": "launch",
+          "type": "dart",
+          "internalConsoleOptions": "neverOpen"
+        }
