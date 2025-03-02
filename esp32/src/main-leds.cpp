@@ -4,7 +4,7 @@
 
 // #include <Arduino_GFX_Library.h>
 // #include <AsyncHTTPRequest_Generic.h>
-#include <EasyLogger.h>
+// #include <EasyLogger.h>
 // #include <SPI.h>
 // #include <TFT_eSPI.h>
 // #include <WiFi.h>
@@ -26,7 +26,7 @@ void setup(void) {
   Serial.begin(115200);
   delay(200);
 
-  //LOG_INFO(LABEL, "Beginning");
+  ////LOG_INFO(LABEL, "Beginning");
   setupLeds(LED_COUNT);
   initButtons();
 }
@@ -36,7 +36,7 @@ extern void turnOffLeds();
 void loop() {
   if (buttonOnePressed()) {
     running = !running;
-    LOG_INFO(LABEL, "Running: " << running);
+    ESP_LOGI(LABEL, "Running: " << running);
     if (!running) {
       turnOffLeds();
     }
@@ -48,7 +48,7 @@ void loop() {
   }
 
   delay(5);
-  // //LOG_INFO(LABEL, "Looping...");
+  ESP_LOGI(LABEL, "Looping...");
   if (running) {
     onLoopLeds();
   }

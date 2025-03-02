@@ -1,6 +1,6 @@
 
 #include <Button.h>
-#include <EasyLogger.h>
+// #include <EasyLogger.h>
 #include <screen.h>
 
 #define LABEL "Button"
@@ -15,11 +15,11 @@ bool Button::pressed() {
   if (expander->digitalRead(pin) == Low) {
     if (state == High) {
       state = Low;
-      LOG_INFO(LABEL, String(id) << " pressed");
+      ESP_LOGI(LABEL, "%s pressed", id);
     }
   } else {
     if (state == Low) {
-      LOG_INFO(LABEL, String(id) << " released");
+      ESP_LOGI(LABEL, "%s released", id);
       state = High;
       return true;
     }

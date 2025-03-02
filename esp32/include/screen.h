@@ -14,3 +14,4 @@ void initScreen();
 void initButtons();
 
 void reactToTouch();
+void rotateScreen();

@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <Arduino_GFX_Library.h>
-#include <EasyLogger.h>
+// #include <EasyLogger.h>
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include <WiFi.h>
@@ -126,7 +126,7 @@ void setup() {
 }
 
 void loop() {
-  // //LOG_INFO("LOOP", "looping...");
+  LOG_INFO("LOOP", "looping...");
   if (!taskRunning) {
     if (!expander->digitalRead(PCA_BUTTON_DOWN)) {
       LOG_INFO("LOOP", "BUTTON_ONE_PRESSED");

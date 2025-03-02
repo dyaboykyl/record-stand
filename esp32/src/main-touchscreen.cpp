@@ -4,13 +4,14 @@
 
 #include <Arduino_GFX_Library.h>
 #include <AsyncHTTPRequest_Generic.h>
-#include <EasyLogger.h>
+// #include <EasyLogger.h>
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include <WiFi.h>
-#include <esp_log.h>
+// #include <esp_log.h>
 #include <lvgl.h>
 
+#include "controller.h"
 #include "screen.h"
 #include "storage.h"
 
@@ -18,20 +19,20 @@
 #define LABEL "Main-TS"
 
 void setup(void) {
-  esp_log_level_set("*", ESP_//LOG_INFO);
-  Serial.begin(115200);
-  delay(200);
-  // while (!Serial) delay(100);
+  // auto mem = heap_caps_malloc(LV_MEM_SIZE, MALLOC_CAP_SPIRAM);
+  initLogging();
 
-  //LOG_INFO(LABEL, "Beginning");
+  ESP_LOGI(LABEL, "Beginning");
   initStorage();
   initButtons();
   initScreen();
-  // Serial.println("Initialized!");
+  ESP_LOGI(LABEL, "Initialized");
+  // ESP_LOGI(LABEL, "LV MEM LOCATION: %p", mem);
 }
 
 extern void startScan();
 extern void checkWifi();
+int i = 0;
 void loop() {
   if (buttonOnePressed()) {
     startScan();
@@ -41,12 +42,16 @@ void loop() {
 
   if (buttonTwoPressed()) {
     // ESP.restart();
-    checkWifi();
+    // checkWifi();
+    rotateScreen();
   }
 
-  lv_timer_handler(); /* let the GUI do its work */
-  delay(5);           /* let this time pass */
+  lv_timer_handler_run_in_period(5); /* let the GUI do its work */
+  delay(5);                          /* let this time pass */
   // reactToTouch();
   // delay(1);
-  // //LOG_INFO(LABEL, "Looping...");
+  if (i++ == 1000) {
+    ESP_LOGI(LABEL, "Looping...");
+    i = 0;
+  }
 }

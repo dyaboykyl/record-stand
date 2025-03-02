@@ -3,7 +3,7 @@
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
-#include <EasyLogger.h>
+// #include <EasyLogger.h>
 
 #include "controller.h"
 #include "screen.h"
@@ -16,11 +16,11 @@
 BLEServer *pServer = NULL;
 
 class ServerCallbacks : public BLEServerCallbacks {
-  void onConnect(BLEServer *pServer) { LOG_INFO(LABEL, "Connected to client"); };
+  void onConnect(BLEServer *pServer) { ESP_LOGI(LABEL, "Connected to client"); };
 
   void onDisconnect(BLEServer *pServer) {
-    LOG_INFO(LABEL, "Disconneted from client");
-    LOG_INFO(LABEL, ">> Readvertising");
+    ESP_LOGI(LABEL, "Disconneted from client");
+    ESP_LOGI(LABEL, ">> Readvertising");
     pServer->getAdvertising()->start();
   }
 };
@@ -31,20 +31,20 @@ class CharacteristicCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
     auto value = pCharacteristic->getValue();
     auto length = pCharacteristic->getLength();
-    LOG_INFO(LABEL, "Received value from client: " << length);
-    LOG_INFO(LABEL, value.c_str());
+    ESP_LOGI(LABEL, "Received value from client: " << length);
+    ESP_LOGI(LABEL, value.c_str());
   }
 
   void onRead(BLECharacteristic *pCharacteristic) {
-    LOG_INFO(LABEL, "Read request");
+    ESP_LOGI(LABEL, "Read request");
     auto data = "Hello " + std::to_string(readCount++);
     pCharacteristic->setValue((uint8_t *)data.c_str(), data.size());
   }
 
-  void onNotify(BLECharacteristic *pCharacteristic) { LOG_INFO(LABEL, "Notify"); }
+  void onNotify(BLECharacteristic *pCharacteristic) { ESP_LOGI(LABEL, "Notify"); }
 
   void onStatus(BLECharacteristic *pCharacteristic, Status s, uint32_t code) {
-    LOG_INFO(LABEL, "Status " << s);
+    ESP_LOGI(LABEL, "Status " << s);
   }
 };
 
@@ -64,7 +64,7 @@ void setup() {
   pService->start();
   BLEDevice::getAdvertising()->start();
 
-  LOG_INFO(LABEL, "Ready");
+  ESP_LOGI(LABEL, "Ready");
 }
 
 void loop() {

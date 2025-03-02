@@ -111,7 +111,7 @@ mixin _$ConnectionStore on _ConnectionStoreBase, Store {
   }
 
   @override
-  dynamic _onScanResults(List<ScanResult> results) {
+  void _onScanResults(List<ScanResult> results) {
     final _$actionInfo = _$_ConnectionStoreBaseActionController.startAction(
         name: '_ConnectionStoreBase._onScanResults');
     try {
@@ -122,7 +122,7 @@ mixin _$ConnectionStore on _ConnectionStoreBase, Store {
   }
 
   @override
-  dynamic _onConnectingChange(bool state) {
+  void _onConnectingChange(bool state) {
     final _$actionInfo = _$_ConnectionStoreBaseActionController.startAction(
         name: '_ConnectionStoreBase._onConnectingChange');
     try {
@@ -133,7 +133,7 @@ mixin _$ConnectionStore on _ConnectionStoreBase, Store {
   }
 
   @override
-  dynamic _onConnectionStateChange(BluetoothConnectionState state) {
+  void _onConnectionStateChange(BluetoothConnectionState state) {
     final _$actionInfo = _$_ConnectionStoreBaseActionController.startAction(
         name: '_ConnectionStoreBase._onConnectionStateChange');
     try {
@@ -144,7 +144,7 @@ mixin _$ConnectionStore on _ConnectionStoreBase, Store {
   }
 
   @override
-  dynamic _onServicesDiscovered(List<BluetoothService> services) {
+  void _onServicesDiscovered(List<BluetoothService> services) {
     final _$actionInfo = _$_ConnectionStoreBaseActionController.startAction(
         name: '_ConnectionStoreBase._onServicesDiscovered');
     try {

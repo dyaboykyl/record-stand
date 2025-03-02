@@ -1,15 +1,15 @@
-import 'dart:async';
-import 'dart:developer';
+import "dart:async";
+import "dart:developer";
 
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:mobx/mobx.dart';
-import 'package:record_stand_app/example/utils/extra.dart';
-import 'package:record_stand_app/extensions.dart';
+import "package:flutter_blue_plus/flutter_blue_plus.dart";
+import "package:mobx/mobx.dart";
+import "package:record_stand_app/example/utils/extra.dart";
+import "package:record_stand_app/extensions.dart";
 
-part 'connection_store.g.dart';
+part "connection_store.g.dart";
 
-final SERVICE_UUID = Guid("2de7d2f2-0000-1000-8000-00805f9b34fb");
-final CHARACTERISTIC_UUID = Guid("0000c870-0000-1000-8000-00805f9b34fb");
+final serviceUuid = Guid("2de7d2f2-0000-1000-8000-00805f9b34fb");
+final identifyCharacteristicUuid = Guid("0000c870-0000-1000-8000-00805f9b34fb");
 
 class ConnectionStore = _ConnectionStoreBase with _$ConnectionStore;
 
@@ -34,18 +34,18 @@ abstract class _ConnectionStoreBase with Store {
   @observable
   bool isScanning = false;
 
-  init() {
+  void init() {
     _scanResultsSubscription =
         FlutterBluePlus.scanResults.listen(_onScanResults, onError: _onError);
     _isScanningSubscription =
         FlutterBluePlus.isScanning.listen(_onScanningStateChange, onError: _onError);
   }
 
-  scan() {
+  void scan() {
     FlutterBluePlus.startScan(timeout: const Duration(seconds: 4));
   }
 
-  connect() {
+  void connect() {
     if (isConnecting || connected) {
       return;
     }
@@ -63,7 +63,7 @@ abstract class _ConnectionStoreBase with Store {
   }
 
   @action
-  _onScanResults(List<ScanResult> results) {
+  void _onScanResults(List<ScanResult> results) {
     if (device != null) {
       return;
     }
@@ -84,13 +84,13 @@ abstract class _ConnectionStoreBase with Store {
   }
 
   @action
-  _onConnectingChange(bool state) {
+  void _onConnectingChange(bool state) {
     log("Connecting: $state");
     isConnecting = state;
   }
 
   @action
-  _onConnectionStateChange(BluetoothConnectionState state) {
+  void _onConnectionStateChange(BluetoothConnectionState state) {
     log("Connection state changed to $state");
     connected = state == BluetoothConnectionState.connected;
     if (state == BluetoothConnectionState.connected) {
@@ -103,9 +103,9 @@ abstract class _ConnectionStoreBase with Store {
   }
 
   @action
-  _onServicesDiscovered(List<BluetoothService> services) {
+  void _onServicesDiscovered(List<BluetoothService> services) {
     log("Services discovered");
-    final service = services.firstWhereOrNull((service) => service.serviceUuid == SERVICE_UUID);
+    final service = services.firstWhereOrNull((service) => service.serviceUuid == serviceUuid);
     if (service == null) {
       log("Service not found");
       return;
@@ -113,7 +113,7 @@ abstract class _ConnectionStoreBase with Store {
     log("Service found");
 
     characteristic = service.characteristics
-        .firstWhereOrNull((characteristic) => characteristic.uuid == CHARACTERISTIC_UUID);
+        .firstWhereOrNull((characteristic) => characteristic.uuid == identifyCharacteristicUuid);
     if (characteristic == null) {
       log("Characteristic not found");
       return;
@@ -121,7 +121,7 @@ abstract class _ConnectionStoreBase with Store {
     log("Characteristic found");
   }
 
-  _onError(e, [stackTrace]) {
+  void _onError(e, [stackTrace]) {
     log("Error", error: e, stackTrace: stackTrace);
   }
 }

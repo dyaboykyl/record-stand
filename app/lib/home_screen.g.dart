@@ -30,12 +30,45 @@ mixin _$HomeScreenStore on _HomeScreenStoreBase, Store {
           Computed<bool>(() => super.connectButtonEnabled,
               name: '_HomeScreenStoreBase.connectButtonEnabled'))
       .value;
+  Computed<String?>? _$titleComputed;
+
+  @override
+  String? get title => (_$titleComputed ??= Computed<String?>(() => super.title,
+          name: '_HomeScreenStoreBase.title'))
+      .value;
+  Computed<String?>? _$artistComputed;
+
+  @override
+  String? get artist =>
+      (_$artistComputed ??= Computed<String?>(() => super.artist,
+              name: '_HomeScreenStoreBase.artist'))
+          .value;
+  Computed<String?>? _$albumComputed;
+
+  @override
+  String? get album => (_$albumComputed ??= Computed<String?>(() => super.album,
+          name: '_HomeScreenStoreBase.album'))
+      .value;
+  Computed<String>? _$identifyStatusComputed;
+
+  @override
+  String get identifyStatus =>
+      (_$identifyStatusComputed ??= Computed<String>(() => super.identifyStatus,
+              name: '_HomeScreenStoreBase.identifyStatus'))
+          .value;
   Computed<VoidCallback?>? _$connectButtonActionComputed;
 
   @override
   VoidCallback? get connectButtonAction => (_$connectButtonActionComputed ??=
           Computed<VoidCallback?>(() => super.connectButtonAction,
               name: '_HomeScreenStoreBase.connectButtonAction'))
+      .value;
+  Computed<VoidCallback?>? _$identifyButtonActionComputed;
+
+  @override
+  VoidCallback? get identifyButtonAction => (_$identifyButtonActionComputed ??=
+          Computed<VoidCallback?>(() => super.identifyButtonAction,
+              name: '_HomeScreenStoreBase.identifyButtonAction'))
       .value;
 
   @override
@@ -44,7 +77,12 @@ mixin _$HomeScreenStore on _HomeScreenStoreBase, Store {
 connectionStatus: ${connectionStatus},
 details: ${details},
 connectButtonEnabled: ${connectButtonEnabled},
-connectButtonAction: ${connectButtonAction}
+title: ${title},
+artist: ${artist},
+album: ${album},
+identifyStatus: ${identifyStatus},
+connectButtonAction: ${connectButtonAction},
+identifyButtonAction: ${identifyButtonAction}
     ''';
   }
 }

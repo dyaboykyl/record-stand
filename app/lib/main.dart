@@ -8,14 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:record_stand_app/connection_store.dart';
 import 'package:record_stand_app/home_screen.dart';
+import 'package:record_stand_app/identify_store.dart';
 
 import 'example/screens/bluetooth_off_screen.dart';
 
 final connectionStore = ConnectionStore();
+final identifyStore = IdentifyStore();
 
 void main() {
   FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
-  connectionStore.init();
   runApp(const FlutterBlueApp());
 }
 
@@ -38,6 +39,8 @@ class _FlutterBlueAppState extends State<FlutterBlueApp> {
   @override
   void initState() {
     super.initState();
+    connectionStore.init();
+    identifyStore.init();
     _adapterStateStateSubscription = FlutterBluePlus.adapterState.listen((state) {
       _adapterState = state;
       if (mounted) {

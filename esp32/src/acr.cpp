@@ -1,7 +1,7 @@
 
 
 #include <ArduinoJSON.h>
-#include <EasyLogger.h>
+// #include <EasyLogger.h>
 #include <HttpClient.h>
 #include <WiFiClientSecure.h>
 #include <acr.h>
@@ -32,7 +32,7 @@ string formDataItem(string name, string value) {
 
 SongInfo identifySongV2(uint8_t *wavData, int size, bool local) {
   if (!isWifiConnected()) {
-    LOG_ERROR(LABEL, "Cannot identify song. Not connected to wifi");
+    // LOG_ERROR(LABEL, "Cannot identify song. Not connected to wifi");
     return {};
   }
 
@@ -48,35 +48,35 @@ SongInfo identifySongV2(uint8_t *wavData, int size, bool local) {
   int bodySize = bodyPart1.length() + size + bodyPart2.length();
   string url = local ? LOCAL_URL : ACR_URL;
 
-  LOG_INFO(LABEL, "Calling " << url.c_str());
+  ESP_LOGI(LABEL, "Calling %s", url.c_str());
   if (!client.begin(String(url.c_str()))) {
-    LOG_ERROR(LABEL, "Unable to start reques ");
+    // LOG_ERROR(LABEL, "Unable to start reques ");
     return {};
   }
 
   client.addHeader("Content-Type", "multipart/form-data;boundary=\"boundary\"");
   if (body == NULL) {
-    LOG_DEBUG(LABEL, "Allocating body. Free PSRAM:" << ESP.getFreePsram());
+    // LOG_DEBUG(LABEL, "Allocating body. Free PSRAM:" << ESP.getFreePsram());
     body = (uint8_t *)ps_malloc(bodySize);
-    LOG_DEBUG(LABEL, "Body allocated. Free PSRAM:" << ESP.getFreePsram());
+    // LOG_DEBUG(LABEL, "Body allocated. Free PSRAM:" << ESP.getFreePsram());
   }
 
-  LOG_DEBUG(LABEL, "Copying part 1. size: " << bodyPart1.length());
+  // LOG_DEBUG(LABEL, "Copying part 1. size: " << bodyPart1.length());
   memcpy(body, bodyPart1.c_str(), bodyPart1.length());
-  LOG_DEBUG(LABEL, "Copying wav data. size: " << size);
+  // LOG_DEBUG(LABEL, "Copying wav data. size: " << size);
   memcpy(body + bodyPart1.length(), wavData, size);
-  LOG_DEBUG(LABEL, "Copying part 2. Size: " << bodyPart2.length());
+  // LOG_DEBUG(LABEL, "Copying part 2. Size: " << bodyPart2.length());
   memcpy(body + bodyPart1.length() + size, bodyPart2.c_str(), bodyPart2.length());
 
   int result = client.POST(body, bodySize);
-  LOG_INFO(LABEL, "Result: " << result);
+  ESP_LOGI(LABEL, "Result: %d", result);
   if (result != HTTP_CODE_OK) {
-    LOG_ERROR(LABEL, "Did not receive success");
+    // LOG_ERROR(LABEL, "Did not receive success");
     return {};
   }
 
   auto payload = client.getString();
-  LOG_INFO(LABEL, "Response: " << payload);
+  ESP_LOGI(LABEL, "Response: %s", payload);
   JsonDocument doc;
   deserializeJson(doc, payload);
   JsonDocument musicData = doc["metadata"]["music"][0];

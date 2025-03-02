@@ -1,6 +1,6 @@
 
 #include <Arduino.h>
-#include <EasyLogger.h>
+// #include <EasyLogger.h>
 #include <wav.h>
 
 #include "audio.h"
@@ -38,10 +38,10 @@ short runHighPass(Filter filter, short value) {
 }
 
 bool allocateWavSpace() {
-  LOG_INFO("WAV", "Allocating space");
+  ESP_LOGI(LABEL, "Allocating space");
   wavData = (int16_t *)ps_malloc(maxWavFileSize);
   wavSampleData = (int16_t *)((char *)wavData + WAV_HEADER_SIZE);
-  LOG_INFO("WAV", "Max sample index: " << (maxWavFileSize / sizeof(int16_t)));
+  ESP_LOGI(LABEL, "Max sample index: %d", (maxWavFileSize / sizeof(int16_t)));
   return true;
 }
 
@@ -67,7 +67,7 @@ void recordWavAtRate(int rate) {
     wavSampleData[i] = map(wavSampleData[i], 0, 4096, 0, 65536);
   }
 
-  LOG_INFO("WAV", "Finished writing WAV file");
+  ESP_LOGI(LABEL, "Finished writing WAV file");
   finishWav(totalMs);
 }
 
@@ -79,12 +79,12 @@ void recordWavFromI2S() {
   auto high = Filter(.9);
 
   // flush initial samples
-  LOG_INFO(LABEL, "Flushing initial samples");
+  // //LOG_INFO(LABEL, "Flushing initial samples");
   for (int i = 0; i < 100; i++) {
     readI2sAudio();
   }
 
-  LOG_INFO(LABEL, "Recording");
+  // //LOG_INFO(LABEL, "Recording");
   unsigned long start = millis();
   while (!wavFilled()) {
     auto audioData = readI2sAudio();
@@ -95,7 +95,7 @@ void recordWavFromI2S() {
   }
   int totalMs = millis() - start;
 
-  LOG_INFO("WAV", "Finished writing WAV file");
+  ESP_LOGI(LABEL, "Finished writing WAV file");
   finishWav(totalMs);
 }
 
@@ -110,12 +110,12 @@ void recordWavMaxRate() {
   }
   int totalMs = millis() - start;
 
-  LOG_INFO("WAV", "Finished writing WAV file");
+  ESP_LOGI(LABEL, "Finished writing WAV file");
   finishWav(totalMs);
 }
 
 void startNewWav() {
-  LOG_INFO("WAV", "Starting new WAV");
+  ESP_LOGI(LABEL, "Starting new WAV");
   memcpy(wavData, &WAV_HEADER_TEMPLATE, WAV_HEADER_SIZE);
   wavSampleData = (int16_t *)((char *)wavData + WAV_HEADER_SIZE);
   currentSampleIndex = 0;
@@ -123,7 +123,7 @@ void startNewWav() {
 
 void addWavSample(int16_t sample) {
   if (!wavFilled()) {
-    // //LOG_INFO("WAV", "Current sample index: " << currentSampleIndex);
+    ESP_LOGI(LABEL, "Current sample index: %d", currentSampleIndex);
     wavSampleData[currentSampleIndex++] = sample;
   }
 }
@@ -137,20 +137,21 @@ void finishWav(int totalMs) {
   currentHeader->wav_size = WAV_HEADER_SIZE + currentHeader->data_bytes - WAV_RIFF_OFFSET;
   currentHeader->sample_rate = (currentSampleIndex + 1) * 1000 / totalMs;
   currentHeader->byte_rate = currentHeader->sample_rate * 2;
-  LOG_INFO(LABEL, "totalMs: " << totalMs << " sampleCount: " << currentSampleIndex
-                              << " dataBytes: " << currentHeader->data_bytes
-                              << " wavSize: " << currentHeader->wav_size
-                              << " sampleRate: " << currentHeader->sample_rate
-                              << " byteRate: " << currentHeader->byte_rate);
+  // //LOG_INFO(LABEL, "totalMs: " << totalMs << " sampleCount: " << currentSampleIndex
+  // << " dataBytes: " << currentHeader->data_bytes
+  // << " wavSize: " << currentHeader->wav_size
+  // << " sampleRate: " << currentHeader->sample_rate
+  // << " byteRate: " << currentHeader->byte_rate);
 
   uint64_t sum = 0;
   for (int i = 0; i <= currentSampleIndex; i++) {
     sum += wavData[currentSampleIndex];
   }
   uint16_t average = sum / currentSampleIndex;
-  LOG_INFO(LABEL, "Sample statistics: sum=" << sum << " avg=" << average);
-  //  writeWavFileToSerial(WAV_HEADER_SIZE);
-  //  Serial.println();
+  // //LOG_INFO(LABEL, "Sample statistics: sum=" << sum << " avg=" <<
+  // average);
+  //   writeWavFileToSerial(WAV_HEADER_SIZE);
+  //   Serial.println();
 }
 
 void writeWavFileToSerial(int size) {

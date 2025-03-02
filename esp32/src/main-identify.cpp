@@ -4,7 +4,7 @@
 
 #include <Arduino_GFX_Library.h>
 #include <AsyncHTTPRequest_Generic.h>
-#include <EasyLogger.h>
+// #include <EasyLogger.h>
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include <WiFi.h>
@@ -33,7 +33,7 @@ void setup(void) {
   Serial.begin(115200);
   delay(200);
 
-  LOG_INFO(LABEL, "Beginning");
+  //LOG_INFO(LABEL, "Beginning");
   initAll();
 }
 

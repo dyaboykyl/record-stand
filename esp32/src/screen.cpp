@@ -2,7 +2,7 @@
 #include <Adafruit_CST8XX.h>
 #include <Arduino_GFX_Library.h>
 #include <Button.h>
-#include <EasyLogger.h>
+// #include <EasyLogger.h>
 #include <TFT_eSPI.h>
 #include <demos/lv_demos.h>
 #include <examples/lv_examples.h>
@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+// #include <lvgl/
 
 #include "utils.h"
 
@@ -54,9 +55,14 @@ Button button1("DOWN", PCA_BUTTON_DOWN);
 Button button2("UP", PCA_BUTTON_UP);
 
 #define DRAW_BUF_SIZE (DIS_WIDTH_PX * DIS_HEIGHT_PX / 10 * (LV_COLOR_DEPTH / 8))
-uint32_t draw_buf[DRAW_BUF_SIZE / 4];
+uint32_t draw_buf[DRAW_BUF_SIZE / 8];
+uint32_t draw_buf2[DRAW_BUF_SIZE / 8];
 
 static lv_obj_t *keyboard;
+
+// void lv_log_register_print_cb(lv_log_print_g_cb_t print_cb) {
+//   // Do nothing, not needed here!
+// }
 
 void lvglLog(lv_log_level_t level, const char *buf) {
   if (level >= LV_LOG_LEVEL) {
@@ -67,11 +73,11 @@ void lvglLog(lv_log_level_t level, const char *buf) {
 
 void setupTouch() {
   if (!cst_ctp.begin(&Wire, I2C_TOUCH_ADDR)) {
-    LOG_WARNING(LABEL, "No Touchscreen found at address 0x");
+    // LOG_WARNING(LABEL, "No Touchscreen found at address 0x");
     Serial.println(I2C_TOUCH_ADDR, HEX);
     touchOK = false;
   } else {
-    LOG_INFO(LABEL, "CST826 Touchscreen found");
+    ESP_LOGI(LABEL, "CST826 Touchscreen found");
     touchOK = true;
   }
 }
@@ -102,6 +108,7 @@ void flushDisplay(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
 
 static uint32_t my_tick(void) { return millis(); }
 
+// extern void lv_log_register_print_cb(lv_log_print_g_cb_t print_cb);
 void lvglSetup() {
   setupTouch();
 
@@ -119,8 +126,10 @@ void lvglSetup() {
   lv_display_set_flush_cb(disp, flushDisplay);
 
   // draw_buf = (uint32_t *)ps_malloc(DRAW_BUF_SIZE);
-  LOG_INFO(LABEL, "draw_buf: " << (unsigned long long)(void const *)draw_buf);
-  lv_display_set_buffers(disp, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+  ESP_LOGI(LABEL, "draw_buf: %p size: %d", (unsigned long long)(void const *)draw_buf,
+           DRAW_BUF_SIZE);
+  lv_display_set_buffers(disp, draw_buf, draw_buf2, sizeof(draw_buf),
+                         LV_DISPLAY_RENDER_MODE_PARTIAL);
 
   /*Initialize the (dummy) input device driver*/
   lv_indev_t *indev = lv_indev_create();
@@ -140,18 +149,6 @@ void lvglSetup() {
    * ----------------------------------------------------------------
    */
   // lv_example_get_started_1();
-
-  /* Option 3: Or try out a demo. Don't forget to enable the demos in lv_conf.h. E.g.
-   * LV_USE_DEMOS_WIDGETS
-   * -------------------------------------------------------------------------------------------
-   */
-  // lv_demo_widgets();
-  // lv_demo_benchmark();
-  // lv_demo_keypad_encoder();
-  // lv_demo_music();
-  // lv_demo_stress();
-  // lv_demo_vector_graphic();
-  // lv_demo_transform();
 }
 
 void makeKeyboard() {
@@ -217,7 +214,7 @@ uint8_t ditherColor(uint8_t (*colorExtractor)(uint16_t), uint16_t rgb565, uint8_
                     float frac) {
   uint8_t color = colorExtractor(rgb565);
   int error = originalColor - color;
-  // //LOG_DEBUG(LABEL, "error: " << (error));
+  // LOG_DEBUG(LABEL, "error: " << (error));
   return (uint8_t)round(originalColor + (error * frac));
 }
 
@@ -230,11 +227,11 @@ void propagateError(uint16_t color, int x, int y, int dx, int dy, float frac, Pi
   }
 
   Pixel *pixel = &pixels[y2 * width + x2];
-  // //LOG_DEBUG(LABEL, "Before: " << (pixel->red));
+  // LOG_DEBUG(LABEL, "Before: " << (pixel->red));
   pixel->red = ditherColor(getRed, color, pixel->red, frac);
   pixel->green = ditherColor(getGreen, color, pixel->green, frac);
   pixel->blue = ditherColor(getBlue, color, pixel->blue, frac);
-  // //LOG_DEBUG(LABEL, "After: " << (pixel->red));
+  // LOG_DEBUG(LABEL, "After: " << (pixel->red));
 }
 
 void dither(Pixel *pixels, uint16_t *buffer, int width, int height) {
@@ -243,9 +240,8 @@ void dither(Pixel *pixels, uint16_t *buffer, int width, int height) {
       int index = y * width + x;
       Pixel pixel = pixels[index];
       uint16_t color = RGB565(pixel.red, pixel.green, pixel.blue);
-      // //LOG_DEBUG(LABEL, (String)pixel.red + "->" + getRed(color) + "(" + getRed(buffer[index])
-      // <<
-      // ")");
+      // LOG_DEBUG(LABEL, (String)pixel.red + "->" + getRed(color) + "(" + getRed(buffer[index])
+      //  << ")");
       buffer[index] = color;
 
       propagateError(color, x, y, 1, 0, 7 / 16.0f, pixels, width, height);
@@ -259,19 +255,20 @@ void dither(Pixel *pixels, uint16_t *buffer, int width, int height) {
 void initButtons() {
   expander->pinMode(PCA_TFT_BACKLIGHT, OUTPUT);
   expander->digitalWrite(PCA_TFT_BACKLIGHT, backlightState);
-  LOG_INFO(LABEL, "Buttons initialized");
+  ESP_LOGI(LABEL, "Buttons initialized");
 }
 
 extern void buildWifiScreen();
+
 void initScreen() {
-  LOG_INFO(LABEL, "Initializing");
+  ESP_LOGI(LABEL, "Initializing");
 
   Wire.setClock(1000000);  // speed up I2C
   if (!gfx->begin()) {
-    LOG_ERROR(LABEL, "gfx->begin() failed!");
+    // LOG_ERROR(LABEL, "gfx->begin() failed!");
   }
   lvglSetup();
-  LOG_INFO(LABEL, "Initialization finished");
+  ESP_LOGI(LABEL, "Initialization finished");
 
   // // wifi setup:
   // //
@@ -282,28 +279,42 @@ void initScreen() {
   buildWifiScreen();
 
   makeKeyboard();
+
+  // lv_demo_music();
 }
 
 CST_TS_Point *prevPoint = NULL;
 
 void reactToTouch() {
   if (touchOK && cst_ctp.touched()) {
-    CST_TS_Point p = cst_ctp.getPoint(0);
-    if (prevPoint != NULL) {
-      gfx->drawLine(p.x, p.y, prevPoint->x, prevPoint->y, RED);
-    }
-    prevPoint = new CST_TS_Point(p);
+    // CST_TS_Point p = cst_ctp.getPoint(0);
+    // if (prevPoint != NULL) {
+    //   gfx->drawLine(p.x, p.y, prevPoint->x, prevPoint->y, RED);
+    // }
+    // prevPoint = new CST_TS_Point(p);
+    rotateScreen();
   }
 }
 
 void writeBacklight(uint8_t state) {
   backlightState = state;
-  LOG_INFO(LABEL, "Writing backlight: " << state);
+  ESP_LOGI(LABEL, "Writing backlight: ", state);
   expander->digitalWrite(PCA_TFT_BACKLIGHT, backlightState);
 }
 
-void updateScreen() {
-  // gfx->draw16bitBeRGBBitmap(00, 00, (uint16_t *)sprite.getPointer(), 400, 400);
+void updateScreen() { rotateScreen(); }
+
+auto rotation = 5;
+
+extern void rotatePassword();
+void rotateScreen() {
+  ESP_LOGI(LABEL, "Rotating screen");
+  auto screen = lv_screen_active();
+  lv_obj_set_style_transform_pivot_x(screen, 240, 0);
+  lv_obj_set_style_transform_pivot_y(screen, 240, 0);
+  lv_obj_set_style_transform_rotation(screen, rotation * 10, 0);
+  rotation += 5;
+  ESP_LOGI(LABEL, "Rotated screen");
 }
 
 void backlightOff() { writeBacklight(HIGH - LOW); }

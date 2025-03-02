@@ -2,7 +2,7 @@
 #include "controller.h"
 
 #include <Arduino.h>
-#include <EasyLogger.h>
+// #include <EasyLogger.h>
 
 #include "acr.h"
 #include "audio.h"
@@ -32,14 +32,16 @@ void initLogging() {
 
   Serial.setDebugOutput(true);
 
-  while (!Serial) {
+  auto start = millis();
+  while (!Serial || millis() - start < 500) {
     delay(10);
   }
 
-  LOG_INFO(LABEL, "Logging ready");
+  ESP_LOGI(LABEL, "Logging ready");
 }
 
 void initAll() {
+  initLogging();
   initStorage();
   initButtons();
   initScreen();
