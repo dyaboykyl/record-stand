@@ -1,55 +1,50 @@
-// SPDX-FileCopyrightText: 2023 Limor Fried for Adafruit Industries
-//
-// SPDX-License-Identifier: MIT
-
-// #include <Arduino_GFX_Library.h>
-// #include <AsyncHTTPRequest_Generic.h>
-// #include <EasyLogger.h>
-// #include <SPI.h>
-// #include <TFT_eSPI.h>
-// #include <WiFi.h>
 #include <esp_log.h>
-// #include <lvgl.h>
 
+#include "controller.h"
 #include "leds.h"
 #include "screen.h"
 
 #define LOG_LEVEL LOG_LEVEL_NOTICE
 #define LABEL "Main"
 
-#define LED_COUNT 6
+#define LED_COUNT 16
 
-bool running = true;
+bool running = false;
 
 void setup(void) {
-  esp_log_level_set("*", ESP_//LOG_INFO);
-  Serial.begin(115200);
-  delay(200);
-
-  ////LOG_INFO(LABEL, "Beginning");
-  setupLeds(LED_COUNT);
+  initLogging();
   initButtons();
+  setupLeds(LED_COUNT);
+  ESP_LOGI(LABEL, "Setup complete");
 }
 
-extern void startScan();
-extern void turnOffLeds();
+int i = 0;
+auto ledFunction = ledsOneByOne;
+auto oneByOne = true;
 void loop() {
   if (buttonOnePressed()) {
     running = !running;
-    ESP_LOGI(LABEL, "Running: " << running);
+    ESP_LOGI(LABEL, "Running: %b", running);
     if (!running) {
       turnOffLeds();
     }
   }
 
-  // and on the backlight
   if (buttonTwoPressed()) {
-    ESP.restart();
+    if (oneByOne) {
+      ledFunction = ledsAll;
+    } else {
+      ledFunction = ledsOneByOne;
+    }
+    oneByOne = !oneByOne;
   }
 
   delay(5);
-  ESP_LOGI(LABEL, "Looping...");
   if (running) {
-    onLoopLeds();
+    ledFunction();
+  }
+  if (i++ == 1000) {
+    ESP_LOGI(LABEL, "Looping...");
+    i = 0;
   }
 }

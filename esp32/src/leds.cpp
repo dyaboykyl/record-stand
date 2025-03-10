@@ -8,13 +8,16 @@
 
 #define BRIGHTNESS 255
 #define LED_PIN MOSI
+#define MAX_LEDS 150
 
-int ledCount = 150;
-CRGB leds[150];
+int ledCount = 16;
+
+CRGB leds[MAX_LEDS];
 unsigned int ledUpdateMillis = 0;
 
 void turnOffLeds() {
-  for (int i = 0; i < ledCount; i++) {
+  ESP_LOGI(LABEL, "Turning off leds");
+  for (int i = 0; i < MAX_LEDS; i++) {
     leds[i] = CRGB::Black;
   }
   FastLED.show();
@@ -49,8 +52,26 @@ void setupLeds(int totalLeds) {
   ESP_LOGI(LABEL, "Setup complete");
 }
 
-void onLoopLeds() {
+void ledsOneByOne() {
+  static int i = 0;
+  if ((millis() - ledUpdateMillis) > 50) {
+    for (int i = 0; i < ledCount; i++) {
+      leds[i] = CRGB::Black;
+    }
+    ESP_LOGD(LABEL, "Updating at i %d", i);
+    ledUpdateMillis = millis();
+    leds[i] = scroll((i) % ledCount);
+    i = (i + 1) % ledCount;
+    FastLED.show();
+  }
+}
+
+void ledsAll() {
   static int offset = 0;
+  if (Serial.available() > 0) {
+    offset = Serial.readString().toInt();
+    ESP_LOGI(LABEL, "Received data: %d", offset);
+  }
   if ((millis() - ledUpdateMillis) > 250) {
     for (int i = 0; i < ledCount; i++) {
       leds[i] = CRGB::Black;
@@ -63,5 +84,4 @@ void onLoopLeds() {
     offset = (offset + 1) % ledCount;
     FastLED.show();
   }
-  // if (offset == 0) offset = 4;
 }
