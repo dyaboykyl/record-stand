@@ -29,12 +29,8 @@
 #define LOG_LOCAL_LEVEL ESP_ LOG_DEBUG
 
 void setup(void) {
-  esp_log_level_set("*", ESP_//LOG_DEBUG);
-  Serial.begin(115200);
-  delay(200);
-
-  //LOG_INFO(LABEL, "Beginning");
-  initAll();
+  initLogging();
+  initButtons();
 }
 
 void loop() {

@@ -2,10 +2,10 @@
 #include "controller.h"
 
 #include <Arduino.h>
-// #include <EasyLogger.h>
 
 #include "acr.h"
 #include "audio.h"
+#include "leds.h"
 #include "network.h"
 #include "screen.h"
 #include "secrets.h"
@@ -13,6 +13,8 @@
 #include "wav.h"
 
 #define LABEL "Controller"
+
+#define LED_COUNT 16
 
 int vprintfSerial(const char* fmt, va_list args) {
   char log_print_buffer[256];
@@ -33,7 +35,7 @@ void initLogging() {
   Serial.setDebugOutput(true);
 
   auto start = millis();
-  while (!Serial || millis() - start < 500) {
+  while (!Serial && millis() - start < 500) {
     delay(10);
   }
 
@@ -47,20 +49,14 @@ void initAll() {
   initScreen();
   allocateWavSpace();
   initAudio();
-  // initWifi();
+  setupLeds(LED_COUNT);
 }
 
 TaskHandle_t taskHandle0;
 TaskHandle_t taskHandle1;
 
-// void recordWavAndSend(bool local) {
-//   recordWavAtRate(16000);
-//   identifySongV2(getWavData(), getWavFileSize(), local);
-// }
-
 void recordWavAndSend(void* params) {
   initWifi();
-  // recordWavAtRate(16000);
   recordWavFromI2S();
   connectToSavedWifi();
   identifySongV2(getWavData(), getWavFileSize(), true);
@@ -104,3 +100,27 @@ void connectToSavedWifi(bool connect) {
     persistWifiCredentials(ssid, password);
   }
 }
+
+void readAudioAndUpdateLeds() {
+  auto audioData = readI2sAudio();
+  updateLedsWithAudio(audioData);
+}
+
+void readAudioAndUpdateLedsTask(void* params) {
+  while (true) {
+    readAudioAndUpdateLeds();
+  }
+}
+
+void logLoop() {
+  int last = millis();
+  while (true) {
+    int now = millis();
+    if (now - last > 100) {
+      ESP_LOGI(LABEL, "Looping");
+      last = now;
+    }
+  }
+}
+
+void start() { runTask(readAudioAndUpdateLedsTask, 1); }

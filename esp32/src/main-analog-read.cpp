@@ -1,6 +1,5 @@
 
 #include <Arduino.h>
-// #include <EasyLogger.h>
 #include <driver/adc.h>
 
 #include "audio.h"
@@ -12,12 +11,8 @@
 #define ADC_CHANNEL ADC2_CHANNEL_5
 
 void setup() {
-  // initLogging();
-  // adc1_config_width(ADC_WIDTH_BIT_12);
-  // adc2_config_channel_atten(ADC_CHANNEL, ADC_ATTEN_DB_11);
-
   initAll();
-  ESP_LOGI(LABEL, "[APP] Free memory bytes: " << esp_get_free_heap_size());
+  ESP_LOGI(LABEL, "[APP] Free memory bytes: %d", esp_get_free_heap_size());
 }
 
 struct Filter {
@@ -50,7 +45,7 @@ int samplesPerSecond = 0;
 int sampleCount = 0;
 void loop() {
   if (buttonOnePressed()) {
-    ESP_LOGI(LABEL, "Reading: " << reading);
+    ESP_LOGI(LABEL, "Reading: %d", reading);
     reading = !reading;
   }
 

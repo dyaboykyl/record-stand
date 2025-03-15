@@ -1,7 +1,7 @@
 #include "audio.h"
 
 #include <Arduino.h>
-// #include <EasyLogger.h>
+#include <arduinoFFT.h>
 #include <driver/adc.h>
 #include <driver/i2s.h>
 
@@ -28,7 +28,7 @@ float alpha;
 short xp, xpp, yp, ypp;
 
 i2s_config_t i2s_config = {.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
-                           .sample_rate = 44000,
+                           .sample_rate = 8000,
                            .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,
                            .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
                            .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_STAND_I2S),
@@ -96,7 +96,13 @@ int16_t readAudio(bool shouldScale, bool notchFilter) {
 
 AudioData* readI2sAudio() {
   size_t bytes_read = 0;
-  i2s_read(I2S_NUM_0, rawData, 4 * SAMPLE_BUFFER_SIZE, &bytes_read, portMAX_DELAY);
+  auto now = millis();
+  ESP_LOGD(LABEL, "[readI2sAudio] start");
+  auto err = i2s_read(I2S_NUM_0, rawData, 4 * SAMPLE_BUFFER_SIZE, &bytes_read, portMAX_DELAY);
+  if (err != ESP_OK) {
+    ESP_LOGE(LABEL, "Error reading I2S: %d", err);
+    return NULL;
+  }
   int samples_read = bytes_read / 4;
   if (samples_read != SAMPLE_BUFFER_SIZE) {
     // LOG_ERROR(LABEL, "Read " << samples_read << " samples instead of " << SAMPLE_BUFFER_SIZE);
@@ -106,8 +112,11 @@ AudioData* readI2sAudio() {
   }
   i2sData.size = samples_read;
 
+  ESP_LOGD(LABEL, "[readI2sAudio] end. millis=%d", millis() - now);
   return &i2sData;
 }
+
+void calculateAudioBandIntensities() {}
 
 void calculateNoiseOffset() {
   ESP_LOGI(LABEL, "Calculating noise offset");

@@ -7,7 +7,7 @@
 #define LABEL "Leds"
 
 #define BRIGHTNESS 255
-#define LED_PIN MOSI
+#define LED_PIN MISO
 #define MAX_LEDS 150
 
 int ledCount = 16;
@@ -84,4 +84,33 @@ void ledsAll() {
     offset = (offset + 1) % ledCount;
     FastLED.show();
   }
+}
+
+int samples = 0;
+int reads = 0;
+int lastUpdate = millis();
+void updateLedsWithAudio(AudioData* audioData) {
+  auto now = millis();
+  int average = 0;
+  for (int i = 0; i < audioData->size; i++) {
+    average += abs(audioData->samples[i]);
+  }
+  samples += audioData->size;
+  reads++;
+  auto time = (now - lastUpdate) / 1000.0f;
+  if (time > 1) {
+    auto sampleRate = samples / time;
+    auto readRate = reads / time;
+    auto averageSamples = samples / reads;
+    ESP_LOGI(
+        LABEL,
+        "Time: %.2f, Samples: %d, Reads: %d, Sample rate: %.2f. Read rate: %.2f. Average sample "
+        "size: %d",
+        time, samples, reads, sampleRate, readRate, averageSamples);
+    samples = 0;
+    reads = 0;
+    lastUpdate = millis();
+  }
+  average /= audioData->size;
+  // ESP_LOGI(LABEL, "Read %d samples. Average: %d", audioData->size, average);
 }
