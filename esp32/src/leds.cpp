@@ -10,10 +10,15 @@
 #define LED_PIN MISO
 #define MAX_LEDS 150
 
-int ledCount = 16;
+const int ledCount = 16;
+const int ledsPerGroup = 4;
+const int ledGroupsCount = ledCount / ledsPerGroup;
+int ledGroups[ledGroupsCount][ledsPerGroup];
 
 CRGB leds[MAX_LEDS];
 unsigned int ledUpdateMillis = 0;
+
+int intensityThreshold = 300;
 
 void turnOffLeds() {
   ESP_LOGI(LABEL, "Turning off leds");
@@ -21,6 +26,22 @@ void turnOffLeds() {
     leds[i] = CRGB::Black;
   }
   FastLED.show();
+}
+
+void createLedGroup(int start, int groupNumber, int direction, int jump) {
+  auto group = ledGroups[groupNumber];
+  int end = start + (ledsPerGroup * direction * jump);
+  int pos = 0;
+  for (int i = start; direction == 1 ? i < end : i > end; i += (direction * jump)) {
+    group[pos++] = i;
+  }
+}
+
+void createLedGroups() {
+  createLedGroup(0, 0, 1, 1);
+  createLedGroup(ledsPerGroup * 2 - 1, 1, -1, 1);
+  createLedGroup(ledsPerGroup * 2, 2, 1, 1);
+  createLedGroup(ledsPerGroup * 4 - 1, 3, -1, 1);
 }
 
 CRGB scroll(int pos) {
@@ -45,11 +66,17 @@ CRGB scroll(int pos) {
 }
 
 void setupLeds(int totalLeds) {
-  ledCount = totalLeds;
+  // ledCount = totalLeds;
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, ledCount).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
+  createLedGroups();
   turnOffLeds();
   ESP_LOGI(LABEL, "Setup complete");
+}
+
+void setIntensityThreshold(int threshold) {
+  intensityThreshold = threshold;
+  ESP_LOGI(LABEL, "Intensity threshold set to %d", intensityThreshold);
 }
 
 void ledsOneByOne() {
@@ -86,8 +113,30 @@ void ledsAll() {
   }
 }
 
+int runningAverageIntensity = 1;
+void updateRunningAverageIntensity(int average) {
+  runningAverageIntensity = (runningAverageIntensity * .9 + average * .1);
+  ESP_LOGI(LABEL, "Running average intensity: %d", runningAverageIntensity);
+}
+
+void updateLedsWithIntensity(int average) {
+  for (int i = 0; i < ledGroupsCount; i++) {
+    for (int j = 0; j < ledsPerGroup; j++) {
+      int pos = ledGroups[i][j];
+      // ESP_LOGD(LABEL, "Updating led %d", pos);
+      if (average / (float)intensityThreshold >= j / 4.0f + .1) {
+        leds[pos] = scroll(j * 4);
+      } else {
+        leds[pos] = CRGB::Black;
+      }
+    }
+  }
+  FastLED.show();
+}
+
 int samples = 0;
 int reads = 0;
+int intensity = 0;
 int lastUpdate = millis();
 void updateLedsWithAudio(AudioData* audioData) {
   auto now = millis();
@@ -95,22 +144,26 @@ void updateLedsWithAudio(AudioData* audioData) {
   for (int i = 0; i < audioData->size; i++) {
     average += abs(audioData->samples[i]);
   }
+  average /= audioData->size;
+  updateLedsWithIntensity(average);
+
   samples += audioData->size;
   reads++;
   auto time = (now - lastUpdate) / 1000.0f;
+  intensity += average;
   if (time > 1) {
     auto sampleRate = samples / time;
     auto readRate = reads / time;
-    auto averageSamples = samples / reads;
-    ESP_LOGI(
-        LABEL,
-        "Time: %.2f, Samples: %d, Reads: %d, Sample rate: %.2f. Read rate: %.2f. Average sample "
-        "size: %d",
-        time, samples, reads, sampleRate, readRate, averageSamples);
+    auto averageIntensity = intensity / reads;
+    ESP_LOGI(LABEL,
+             "Time: %.2f, Samples: %d, Reads: %d, Sample rate: %.2f. Read rate: %.2f. Average "
+             "intensity %d",
+             time, samples, reads, sampleRate, readRate, averageIntensity);
     samples = 0;
     reads = 0;
+    intensity = 0;
     lastUpdate = millis();
   }
-  average /= audioData->size;
   // ESP_LOGI(LABEL, "Read %d samples. Average: %d", audioData->size, average);
+  // updateRunningAverageIntensity(average);
 }
