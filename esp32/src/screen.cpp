@@ -13,6 +13,7 @@
 #include <unistd.h>
 // #include <lvgl/
 
+#include "calibration_screen.h"
 #include "utils.h"
 
 #define LABEL "Screen"
@@ -157,29 +158,29 @@ void makeKeyboard() {
   lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
 }
 
-void background() {
-  lv_obj_t *background = lv_obj_create(lv_scr_act());
-  lv_obj_set_scrollbar_mode(background, LV_SCROLLBAR_MODE_OFF);
-  lv_obj_set_size(background, 480, 480);
-  lv_obj_set_pos(background, 0, 0);
-  lv_obj_set_style_bg_color(background, BASE_ONE, 0);
-  // lv_obj_set_style_bg_grad_color(background, BASE_ONE_GRAD, 0);
-  // lv_obj_set_style_bg_grad_dir(background, LV_GRAD_DIR_VER, 0);
-  // lvobdithe
+// void background() {
+//   lv_obj_t *background = lv_obj_create(lv_scr_act());
+//   lv_obj_set_scrollbar_mode(background, LV_SCROLLBAR_MODE_OFF);
+//   lv_obj_set_size(background, 480, 480);
+//   lv_obj_set_pos(background, 0, 0);
+//   lv_obj_set_style_bg_color(background, BASE_ONE, 0);
+//   // lv_obj_set_style_bg_grad_color(background, BASE_ONE_GRAD, 0);
+//   // lv_obj_set_style_bg_grad_dir(background, LV_GRAD_DIR_VER, 0);
+//   // lvobdithe
 
-  // static lv_grad_dsc_t gradient = {
-  //     .dir = LV_GRAD_DIR_VER,
-  //     .stops = {{.color = BASE_ONE, .frac = 0}, {.color = BASE_ONE_GRAD, .frac = 1}},
-  // };
-  // lv_grad_color_t
-  // lv_gradi(&gradient, {BASE_ONE, BASE_ONE_GRAD}, NULL, NULL, 2);
+//   // static lv_grad_dsc_t gradient = {
+//   //     .dir = LV_GRAD_DIR_VER,
+//   //     .stops = {{.color = BASE_ONE, .frac = 0}, {.color = BASE_ONE_GRAD, .frac = 1}},
+//   // };
+//   // lv_grad_color_t
+//   // lv_gradi(&gradient, {BASE_ONE, BASE_ONE_GRAD}, NULL, NULL, 2);
 
-  // lv_obj_set_style_bg_grad(background, &gradient, 0);
-  lv_obj_set_style_border_width(background, 0, 0);
-  lv_obj_set_style_border_color(background, BASE_ONE, 0);
-  lv_obj_set_style_radius(background, LV_RADIUS_CIRCLE, 0);
-  disable(background);
-}
+//   // lv_obj_set_style_bg_grad(background, &gradient, 0);
+//   lv_obj_set_style_border_width(background, 0, 0);
+//   lv_obj_set_style_border_color(background, BASE_ONE, 0);
+//   lv_obj_set_style_radius(background, LV_RADIUS_CIRCLE, 0);
+//   disable(background);
+// }
 
 void addTitle() {
   static lv_style_t titleStyle;
@@ -273,12 +274,12 @@ void initScreen() {
   // // wifi setup:
   // //
   // https://github.com/0015/ThatProject/blob/master/ESP32_LVGL/LVGL8/3_BaseProject_Network_Selector/3_BaseProject_Network_Selector.ino#L495
-  background();
+  // background();
 
-  addTitle();
-  buildWifiScreen();
+  // addTitle();
+  buildCalibrationScreen();
 
-  makeKeyboard();
+  // makeKeyboard();
 
   // lv_demo_music();
 }

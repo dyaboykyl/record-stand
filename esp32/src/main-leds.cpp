@@ -7,11 +7,11 @@
 #define LOG_LEVEL LOG_LEVEL_NOTICE
 #define LABEL "Main"
 
-#define LED_COUNT 16
+#define LED_COUNT 90
 
 bool running = false;
 
-void setup(void) {
+void setup() {
   initLogging();
   initButtons();
   setupLeds(LED_COUNT);

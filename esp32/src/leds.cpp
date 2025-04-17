@@ -6,11 +6,12 @@
 
 #define LABEL "Leds"
 
-#define BRIGHTNESS 255
+#define BRIGHTNESS 150
 #define LED_PIN MISO
-#define MAX_LEDS 150
+#define MAX_LEDS 47
 
-const int ledCount = 16;
+const int ledCount = 47;
+const int ledOffset = 0;
 const int ledsPerGroup = 4;
 const int ledGroupsCount = ledCount / ledsPerGroup;
 int ledGroups[ledGroupsCount][ledsPerGroup];
@@ -18,7 +19,7 @@ int ledGroups[ledGroupsCount][ledsPerGroup];
 CRGB leds[MAX_LEDS];
 unsigned int ledUpdateMillis = 0;
 
-int intensityThreshold = 300;
+int intensityThreshold = 150;
 
 void turnOffLeds() {
   ESP_LOGI(LABEL, "Turning off leds");
@@ -69,6 +70,7 @@ void setupLeds(int totalLeds) {
   // ledCount = totalLeds;
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, ledCount).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
+  FastLED.setMaxPowerInVoltsAndMilliamps(5, 4000);
   createLedGroups();
   turnOffLeds();
   ESP_LOGI(LABEL, "Setup complete");
@@ -80,7 +82,7 @@ void setIntensityThreshold(int threshold) {
 }
 
 void ledsOneByOne() {
-  static int i = 0;
+  static int i = ledOffset;
   if ((millis() - ledUpdateMillis) > 50) {
     for (int i = 0; i < ledCount; i++) {
       leds[i] = CRGB::Black;
@@ -89,6 +91,9 @@ void ledsOneByOne() {
     ledUpdateMillis = millis();
     leds[i] = scroll((i) % ledCount);
     i = (i + 1) % ledCount;
+    if (i == 0) {
+      i = ledOffset;
+    }
     FastLED.show();
   }
 }
@@ -99,16 +104,19 @@ void ledsAll() {
     offset = Serial.readString().toInt();
     ESP_LOGI(LABEL, "Received data: %d", offset);
   }
-  if ((millis() - ledUpdateMillis) > 250) {
+  if ((millis() - ledUpdateMillis) > 25) {
     for (int i = 0; i < ledCount; i++) {
       leds[i] = CRGB::Black;
     }
     // LOG_DEBUG(LABEL, "Updating at offset " << offset);
     ledUpdateMillis = millis();
-    for (int i = 0; i < ledCount; i++) {
+    for (int i = ledOffset; i < ledCount; i++) {
       leds[i] = scroll((i + offset) % ledCount);
     }
     offset = (offset + 1) % ledCount;
+    if (offset == 0) {
+      offset = ledOffset;
+    }
     FastLED.show();
   }
 }
@@ -167,3 +175,16 @@ void updateLedsWithAudio(AudioData* audioData) {
   // ESP_LOGI(LABEL, "Read %d samples. Average: %d", audioData->size, average);
   // updateRunningAverageIntensity(average);
 }
+
+// void ledsColorFromSerial() {
+//   if (Serial.available() > 0) {
+//     auto input = Serial.readString();
+//     ESP_LOGI(LABEL, "Received data: %s", input.c_str());
+//     int row, col, hue, sat, val;
+//     sscanf(input.c_str(), "%d,%d,%d", &row, &col, &hue, &sat, &val);
+//     auto color = CHSV(hue, sat, val);
+//     leds[ledGroups[row][col]] = color;
+//     ESP_LOGI(LABEL, "Setting led %d to color %d, %,d, %d", ledGroups[row][col], hue, sat, val);
+//     FastLED.show();
+//   }
+// }

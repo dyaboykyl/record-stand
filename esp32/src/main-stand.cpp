@@ -11,12 +11,14 @@
 
 void setup() { initAll(); }
 
+// extern void ledsColorFromSerial();
 void loop() {
   if (buttonOnePressed()) {
     start();
   }
   // ESP_LOGI(LABEL, "Looping");
   delay(100);
+  // ledsColorFromSerial();
 
   if (Serial.available() > 0) {
     auto intensity = atoi(Serial.readString().c_str());
