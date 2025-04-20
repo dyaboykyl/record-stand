@@ -39,6 +39,7 @@ void initLogging() {
     delay(10);
   }
 
+  Serial.println("Serial: Logging ready");
   ESP_LOGI(LABEL, "Logging ready");
 }
 

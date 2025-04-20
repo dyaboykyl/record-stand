@@ -8,9 +8,9 @@
 
 #define BRIGHTNESS 150
 #define LED_PIN MISO
-#define MAX_LEDS 47
+#define MAX_LEDS 47 *2
 
-const int ledCount = 47;
+const int ledCount = MAX_LEDS;
 const int ledOffset = 0;
 const int ledsPerGroup = 4;
 const int ledGroupsCount = ledCount / ledsPerGroup;
@@ -70,7 +70,7 @@ void setupLeds(int totalLeds) {
   // ledCount = totalLeds;
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, ledCount).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
-  FastLED.setMaxPowerInVoltsAndMilliamps(5, 4000);
+  FastLED.setMaxPowerInVoltsAndMilliamps(5, 3000);
   createLedGroups();
   turnOffLeds();
   ESP_LOGI(LABEL, "Setup complete");

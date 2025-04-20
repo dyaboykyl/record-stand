@@ -4,7 +4,7 @@
 #include "leds.h"
 #include "screen.h"
 
-#define LOG_LEVEL LOG_LEVEL_NOTICE
+// #define LOG_LEVEL LOG_LEVEL_NOTICE
 #define LABEL "Main"
 
 #define LED_COUNT 90
@@ -24,7 +24,7 @@ auto oneByOne = true;
 void loop() {
   if (buttonOnePressed()) {
     running = !running;
-    ESP_LOGI(LABEL, "Running: %b", running);
+    ESP_LOGI(LABEL, "Running: %b %d", running, i);
     if (!running) {
       turnOffLeds();
     }
@@ -43,7 +43,7 @@ void loop() {
   if (running) {
     ledFunction();
   }
-  if (i++ == 1000) {
+  if (i++ == 500) {
     ESP_LOGI(LABEL, "Looping...");
     i = 0;
   }

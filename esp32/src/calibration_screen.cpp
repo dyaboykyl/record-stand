@@ -13,14 +13,15 @@ void background() {
   disable(background);
 }
 
-void calibrationLine(int radius, lv_color_t color, bool enable = false) {
+void calibrationLine(int radius, lv_color_t color, bool shouldEnable = false) {
   lv_obj_t *circle = lv_obj_create(lv_screen_active());
   lv_obj_set_size(circle, radius * 2, radius * 2);
   lv_obj_set_pos(circle, 240 - radius, 240 - radius);
   lv_obj_set_style_bg_color(circle, color, 0);
   lv_obj_set_style_radius(circle, LV_RADIUS_CIRCLE, 0);
   lv_obj_set_style_border_width(circle, 0, 0);
-  if (!enable) disable(circle);
+  // if (!enable) disable(circle);
+  enable(circle);
 }
 
 void calibrationLines() {
@@ -31,7 +32,7 @@ void calibrationLines() {
 }
 
 void buildCalibrationScreen() {
+  disable(lv_screen_active());
   background();
   calibrationLines();
-  disable(lv_screen_active());
 }

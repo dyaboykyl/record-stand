@@ -14,7 +14,11 @@ static lv_color_t DISABLED_COLOR = lv_color_make(200, 200, 200);
 
 inline void hide(lv_obj_t *obj) { lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN); }
 inline void show(lv_obj_t *obj) { lv_obj_remove_flag(obj, LV_OBJ_FLAG_HIDDEN); }
-inline void enable(lv_obj_t *obj) { lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE); }
+inline void enable(lv_obj_t *obj) {
+  lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE);
+  lv_obj_add_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_remove_flag(obj, LV_OBJ_FLAG_PRESS_LOCK);
+}
 inline void disable(lv_obj_t *obj) {
   lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICKABLE);
   lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
