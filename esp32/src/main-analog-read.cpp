@@ -6,6 +6,7 @@
 #include "controller.h"
 #include "screen.h"
 #include "storage.h"
+#include "device.h"
 
 #define LABEL "Main"
 #define ADC_CHANNEL ADC2_CHANNEL_5
@@ -44,12 +45,12 @@ auto last = millis();
 int samplesPerSecond = 0;
 int sampleCount = 0;
 void loop() {
-  if (buttonOnePressed()) {
+  if (button1.pressed()) {
     ESP_LOGI(LABEL, "Reading: %d", reading);
     reading = !reading;
   }
 
-  if (buttonTwoPressed()) {
+  if (button2.pressed()) {
     // connectToSavedWifi();
 
     int32_t int32 = (-0x7ab290 << 8) + 2656;
@@ -92,19 +93,22 @@ void loop() {
     //   // runLowPass(filters[i], value);
     // }
 
-    auto audioData = readI2sAudio();
-    sampleCount += audioData->size;
+    // auto audioData = readI2sAudio();
+    // sampleCount += audioData->size;
+    sampleCount++;
     if (millis() - last >= 1000) {
       samplesPerSecond = sampleCount;
       sampleCount = 0;
       last = millis();
     }
-    for (int i = 0; i < audioData->size; i++) {
-      Serial.print(">Raw:");
-      Serial.println(audioData->samples[i]);
-      //   Serial.print(">Size:");
-      //   Serial.println(audioData->size);
-    }
+    // for (int i = 0; i < audioData->size; i++) {
+    //   Serial.print(">Raw:");
+    //   Serial.println(audioData->samples[i]);
+    //   //   Serial.print(">Size:");
+    //   //   Serial.println(audioData->size);
+    // }
+    Serial.print(">Mic:");
+    Serial.println(analogRead(A1));
     Serial.print(">Sample Rate:");
     Serial.println(samplesPerSecond);
   }

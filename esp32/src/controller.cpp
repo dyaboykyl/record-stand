@@ -5,9 +5,10 @@
 
 #include "acr.h"
 #include "audio.h"
+#include "device.h"
 #include "leds.h"
 #include "network.h"
-#include "screen.h"
+#include "screen/screen.h"
 #include "secrets.h"
 #include "storage.h"
 #include "wav.h"
@@ -45,12 +46,13 @@ void initLogging() {
 
 void initAll() {
   initLogging();
-  initStorage();
-  initButtons();
-  initScreen();
-  allocateWavSpace();
+  // initStorage();
   initAudio();
-  setupLeds(LED_COUNT);
+  // initButtons();
+  initTouch();
+  initScreen();
+  // allocateWavSpace();
+  // setupLeds(LED_COUNT);
 }
 
 TaskHandle_t taskHandle0;

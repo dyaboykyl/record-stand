@@ -1,7 +1,7 @@
 
 #include <Button.h>
-// #include <EasyLogger.h>
-#include <screen.h>
+#include <device.h>
+#include <esp_log.h>
 
 #define LABEL "Button"
 
@@ -12,17 +12,17 @@ Button::Button(const char* id, uint8_t pin) {
 }
 
 bool Button::pressed() {
-  if (expander->digitalRead(pin) == Low) {
-    if (state == High) {
-      state = Low;
-      ESP_LOGI(LABEL, "%s pressed", id);
-    }
-  } else {
-    if (state == Low) {
-      ESP_LOGI(LABEL, "%s released", id);
-      state = High;
-      return true;
-    }
-  }
+  // if (expander->digitalRead(pin) == Low) {
+  //   if (state == High) {
+  //     state = Low;
+  //     ESP_LOGI(LABEL, "%s pressed", id);
+  //   }
+  // } else {
+  //   if (state == Low) {
+  //     ESP_LOGI(LABEL, "%s released", id);
+  //     state = High;
+  //     return true;
+  //   }
+  // }
   return false;
 }

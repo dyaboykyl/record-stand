@@ -7,19 +7,19 @@
 #define LABEL "Leds"
 
 #define BRIGHTNESS 150
-#define LED_PIN MISO
-#define MAX_LEDS 47 *2
+#define LED_PIN A1
+#define MAX_LEDS 47 * 2
 
 const int ledCount = MAX_LEDS;
 const int ledOffset = 0;
-const int ledsPerGroup = 4;
+const int ledsPerGroup = 23;
 const int ledGroupsCount = ledCount / ledsPerGroup;
 int ledGroups[ledGroupsCount][ledsPerGroup];
 
 CRGB leds[MAX_LEDS];
 unsigned int ledUpdateMillis = 0;
 
-int intensityThreshold = 150;
+int intensityThreshold = 200;
 
 void turnOffLeds() {
   ESP_LOGI(LABEL, "Turning off leds");
@@ -47,7 +47,7 @@ void createLedGroups() {
 
 CRGB scroll(int pos) {
   CRGB color(0, 0, 0);
-  float threshold1 = ledCount / 3.0f;
+  float threshold1 = ledsPerGroup / 3.0f;
   float threshold2 = threshold1 * 2;
 
   if (pos < threshold1) {
@@ -58,7 +58,7 @@ CRGB scroll(int pos) {
     color.g = ((float)(pos - threshold1) / threshold1) * 170;
     color.r = 170 - color.g;
     color.b = 0;
-  } else if (pos <= ledCount) {
+  } else if (pos <= ledsPerGroup) {
     color.b = ((float)(pos - threshold2) / threshold1) * 255;
     color.g = 170 - color.b;
     color.r = 1;
@@ -98,7 +98,7 @@ void ledsOneByOne() {
   }
 }
 
-void ledsAll() {
+void ledsAll(bool update) {
   static int offset = 0;
   if (Serial.available() > 0) {
     offset = Serial.readString().toInt();
@@ -113,9 +113,11 @@ void ledsAll() {
     for (int i = ledOffset; i < ledCount; i++) {
       leds[i] = scroll((i + offset) % ledCount);
     }
-    offset = (offset + 1) % ledCount;
-    if (offset == 0) {
-      offset = ledOffset;
+    if (update) {
+      offset = (offset + 1) % ledCount;
+      if (offset == 0) {
+        offset = ledOffset;
+      }
     }
     FastLED.show();
   }
@@ -127,13 +129,16 @@ void updateRunningAverageIntensity(int average) {
   ESP_LOGI(LABEL, "Running average intensity: %d", runningAverageIntensity);
 }
 
-void updateLedsWithIntensity(int average) {
+void updateLedsWithIntensity(uint16_t average) {
   for (int i = 0; i < ledGroupsCount; i++) {
     for (int j = 0; j < ledsPerGroup; j++) {
       int pos = ledGroups[i][j];
-      // ESP_LOGD(LABEL, "Updating led %d", pos);
-      if (average / (float)intensityThreshold >= j / 4.0f + .1) {
-        leds[pos] = scroll(j * 4);
+      float intensity = average / (float)intensityThreshold;
+      float marker = j / (float)ledsPerGroup;
+      ESP_LOGD(LABEL, "Updating led %d: Average: %d Intensity: %f Marker: %f", pos, average, intensity, marker);
+      if (intensity >=  marker) {
+        // ESP_LOGD(LABEL, "Triggered led %d: Color: %d", pos, j * 255 / ledsPerGroup);
+        leds[pos] = scroll(j);
       } else {
         leds[pos] = CRGB::Black;
       }

@@ -8,6 +8,7 @@
 #include <string>
 #include <thread>
 
+#include "calibration.h"
 #include "utils.h"
 
 using namespace std;
@@ -125,6 +126,7 @@ void buildAction() {
 }
 
 void buildMainScreen() {
+  calibrationLines();
   buildNowPlayingInfo();
   buildAction();
   //

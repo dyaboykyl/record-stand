@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Adafruit_CST8XX.h>
+#include <Arduino_GFX_Library.h>
 #include <FreeRTOS.h>
 #include <WString.h>
 

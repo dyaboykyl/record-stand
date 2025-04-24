@@ -1,8 +1,8 @@
 #include <esp_log.h>
 
 #include "controller.h"
+#include "device.h"
 #include "leds.h"
-#include "screen.h"
 
 // #define LOG_LEVEL LOG_LEVEL_NOTICE
 #define LABEL "Main"
@@ -21,6 +21,7 @@ void setup() {
 int i = 0;
 auto ledFunction = ledsOneByOne;
 auto oneByOne = true;
+auto dynamicLeds = false;
 void loop() {
   if (buttonOnePressed()) {
     running = !running;
@@ -32,16 +33,22 @@ void loop() {
 
   if (buttonTwoPressed()) {
     if (oneByOne) {
-      ledFunction = ledsAll;
-    } else {
-      ledFunction = ledsOneByOne;
+      oneByOne = false;
+      dynamicLeds = true;
+    } else if (dynamicLeds) {
+      dynamicLeds = false;
+    } else if (!dynamicLeds) {
+      oneByOne = true;
     }
-    oneByOne = !oneByOne;
   }
 
   delay(5);
   if (running) {
-    ledFunction();
+    if (oneByOne) {
+      ledsOneByOne();
+    } else {
+      ledsAll(dynamicLeds);
+    }
   }
   if (i++ == 500) {
     ESP_LOGI(LABEL, "Looping...");

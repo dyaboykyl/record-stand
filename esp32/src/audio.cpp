@@ -36,27 +36,39 @@ i2s_config_t i2s_config = {.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
                            .intr_alloc_flags = 0,  // ESP_INTR_FLAG_LEVEL1,
                            .dma_buf_count = 8,
                            .dma_buf_len = SAMPLE_BUFFER_SIZE,
-                           .use_apll = true,
+                           .use_apll = false,
                            .tx_desc_auto_clear = true,
                            .fixed_mclk = 0};
-// i2s pins
-i2s_pin_config_t i2sPins = {
-    .bck_io_num = A1, .ws_io_num = SS, .data_out_num = I2S_PIN_NO_CHANGE, .data_in_num = MOSI};
 
-AudioData i2sData;
+i2s_pin_config_t i2sPins = {
+    .bck_io_num = A0,
+    .ws_io_num = A1,
+    .data_out_num = I2S_PIN_NO_CHANGE,
+    .data_in_num = A1  //
+};
+
+AudioData audioData;
 int32_t* rawData;
 
 void initAudio() {
   ESP_LOGI(LABEL, "Initializing audio");
-  //   adc1_config_width(ADC_WIDTH_BIT_12);
-  //   adc2_config_channel_atten(ADC2_CHANNEL_5, ADC_ATTEN_DB_11);
-  //   analogReadResolution(16);
+  audioData = {.samples = (int16_t*)ps_malloc(sizeof(int16_t) * SAMPLE_BUFFER_SIZE), .size = 0};
+  ESP_LOGI(LABEL, "Audio initialized");
+}
+
+void initI2s() {
+  ESP_LOGI(LABEL, "Initializing I2S");
   auto err = i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
   ESP_LOGI(LABEL, "Driver result: %d. Setting I2S pins", err);
-  i2s_set_pin(I2S_NUM_0, &i2sPins);
-  i2sData = {.samples = (int16_t*)ps_malloc(sizeof(int16_t) * SAMPLE_BUFFER_SIZE), .size = 0};
+  err= i2s_set_pin(I2S_NUM_0, &i2sPins);
+  ESP_LOGI(LABEL, "Pins result: %d", err);
   rawData = (int32_t*)ps_malloc(4 * SAMPLE_BUFFER_SIZE);
-  ESP_LOGI(LABEL, "Audio initialized");
+  ESP_LOGI(LABEL, "I2S initialized");
+}
+
+void stopI2s() {
+  i2s_stop(I2S_NUM_0);
+  i2s_driver_uninstall(I2S_NUM_0);
 }
 
 // start a task to read samples from I2S
@@ -94,6 +106,12 @@ int16_t readAudio(bool shouldScale, bool notchFilter) {
   return shouldScale ? scale(audioValue) : audioValue;
 }
 
+AudioData *readAnalogAudio() {
+  audioData.size = 1;
+  audioData.samples[0] = abs(analogRead(A0) - 2000);
+  return &audioData;
+}
+
 AudioData* readI2sAudio() {
   size_t bytes_read = 0;
   auto now = millis();
@@ -108,12 +126,12 @@ AudioData* readI2sAudio() {
     // LOG_ERROR(LABEL, "Read " << samples_read << " samples instead of " << SAMPLE_BUFFER_SIZE);
   }
   for (int i = 0; i < samples_read; i++) {
-    i2sData.samples[i] = ((float)(rawData[i] >> 8) / 0x7fffff) * INT16_MAX;
+    audioData.samples[i] = ((float)(rawData[i] >> 8) / 0x7fffff) * INT16_MAX;
   }
-  i2sData.size = samples_read;
+  audioData.size = samples_read;
 
   // ESP_LOGD(LABEL, "[readI2sAudio] end. millis=%d", millis() - now);
-  return &i2sData;
+  return &audioData;
 }
 
 void calculateAudioBandIntensities() {}
@@ -126,6 +144,20 @@ void calculateNoiseOffset() {
   }
   noiseOffset = sum / NOISE_SAMPLE_SIZE;
   ESP_LOGI(LABEL, "Noise offset: %d", noiseOffset);
+}
+
+void plotAudio() {
+  Serial.print(">A0:");
+  Serial.println(analogRead(A0));
+  Serial.print(">Scaled:");
+  Serial.println(readAnalogAudio()->samples[0]);
+    // auto audioData = readI2sAudio();
+    // for (int i = 0; i < audioData->size; i++) {
+    //   Serial.print(">Raw:");
+    //   Serial.println(audioData->samples[i]);
+    //     Serial.print(">Size:");
+    //     Serial.println(audioData->size);
+    // }
 }
 
 int getNoiseOffset() { return noiseOffset; }
