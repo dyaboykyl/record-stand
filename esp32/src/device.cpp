@@ -13,7 +13,7 @@ Button button1("DOWN", PCA_BUTTON_DOWN);
 Button button2("UP", PCA_BUTTON_UP);
 
 Arduino_XCA9554SWSPI *expander =
-    new Arduino_XCA9554SWSPI(PCA_TFT_RESET, PCA_TFT_CS, PCA_TFT_SCK, PCA_TFT_MOSI, &Wire, 0x3D);
+    new Arduino_XCA9554SWSPI(PCA_TFT_RESET, PCA_TFT_CS, PCA_TFT_SCK, PCA_TFT_MOSI, &Wire, 0x3F);
 
 Arduino_ESP32RGBPanel *rgbpanel = new Arduino_ESP32RGBPanel(
     TFT_DE, TFT_VSYNC, TFT_HSYNC, TFT_PCLK, TFT_R1, TFT_R2, TFT_R3, TFT_R4, TFT_R5, TFT_G0, TFT_G1,
@@ -31,7 +31,7 @@ Adafruit_CST8XX cst_ctp = Adafruit_CST8XX();
 
 bool initTouch() {
   if (!cst_ctp.begin(&Wire, I2C_TOUCH_ADDR)) {
-    // LOG_WARNING(LABEL, "No Touchscreen found at address 0x");
+    ESP_LOGW(LABEL, "No Touchscreen found at address 0x");
     Serial.println(I2C_TOUCH_ADDR, HEX);
     return false;
   } else {

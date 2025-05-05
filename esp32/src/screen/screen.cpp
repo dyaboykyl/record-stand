@@ -6,6 +6,7 @@
 #include <lvgl.h>
 
 #include "device.h"
+#include "screen/calibration_screen.h"
 
 #define LABEL "Screen"
 
@@ -13,9 +14,11 @@ bool touchOK;
 
 uint32_t screenWidth;
 uint32_t screenHeight;
-uint32_t bufSize;
+const int bufSize = SCREEN_DIAMETER * 40;
 lv_display_t *disp;
-lv_color_t *disp_draw_buf;
+// lv_color_t *disp_draw_buf;
+lv_color_t disp_draw_buf[bufSize];
+lv_color_t disp_draw_buf2[bufSize];
 
 #if LV_USE_LOG != 0
 void my_print(lv_log_level_t level, const char *buf) {
@@ -41,7 +44,7 @@ void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
 }
 
 bool setupGfx() {
-  Wire.setClock(1000000); 
+  Wire.setClock(1000000);
 #ifdef GFX_EXTRA_PRE_INIT
   GFX_EXTRA_PRE_INIT();
 #endif
@@ -54,7 +57,7 @@ bool setupGfx() {
 }
 
 void readTouch(lv_indev_t *indev, lv_indev_data_t *data) {
-  if (touchOK && cst_ctp.touched()) {
+  if (cst_ctp.touched()) {
     CST_TS_Point p = cst_ctp.getPoint(0);
     data->state = LV_INDEV_STATE_PRESSED;
     data->point.x = p.x;
@@ -77,21 +80,22 @@ void setupLvgl() {
 
   screenWidth = gfx->width();
   screenHeight = gfx->height();
-  bufSize = screenWidth * 40;
+  // bufSize = screenWidth * 40;
 
-  disp_draw_buf =
-      (lv_color_t *)heap_caps_malloc(bufSize * 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-  if (!disp_draw_buf) {
-    // remove MALLOC_CAP_INTERNAL flag try again
-    disp_draw_buf = (lv_color_t *)heap_caps_malloc(bufSize * 2, MALLOC_CAP_8BIT);
-  }
+  // disp_draw_buf =
+  //     (lv_color_t *)heap_caps_malloc(bufSize * 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+  // if (!disp_draw_buf) {
+  //   // remove MALLOC_CAP_INTERNAL flag try again
+  //   disp_draw_buf = (lv_color_t *)heap_caps_malloc(bufSize * 2, MALLOC_CAP_8BIT);
+  // }
 
   if (!disp_draw_buf) {
     Serial.println("LVGL disp_draw_buf allocate failed!");
   } else {
     disp = lv_display_create(screenWidth, screenHeight);
     lv_display_set_flush_cb(disp, my_disp_flush);
-    lv_display_set_buffers(disp, disp_draw_buf, NULL, bufSize * 2, LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_display_set_buffers(disp, (void *)disp_draw_buf, (void *)disp_draw_buf2, bufSize * 2,
+                           LV_DISPLAY_RENDER_MODE_PARTIAL);
 
     /*Initialize the (dummy) input device driver*/
     lv_indev_t *indev = lv_indev_create();
@@ -106,7 +110,9 @@ void initScreen() {
     return;
   }
 
-  // setupLvgl();
+  initTouch();
+  setupLvgl();
+  buildCalibrationScreen();
 
   // lv_obj_t *label = lv_label_create(lv_scr_act());
   // lv_label_set_text(label, "Hello Arduino, I'm LVGL!(V" GFX_STR(LVGL_VERSION_MAJOR) "." GFX_STR(

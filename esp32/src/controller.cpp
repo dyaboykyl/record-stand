@@ -35,8 +35,9 @@ void initLogging() {
 
   Serial.setDebugOutput(true);
 
+  delay(500);
   auto start = millis();
-  while (!Serial && millis() - start < 500) {
+  while (!Serial && millis() - start < 1000) {
     delay(10);
   }
 
@@ -48,11 +49,10 @@ void initAll() {
   initLogging();
   // initStorage();
   initAudio();
-  // initButtons();
-  initTouch();
+  initButtons();
   initScreen();
   // allocateWavSpace();
-  // setupLeds(LED_COUNT);
+  setupLeds(LED_COUNT);
 }
 
 TaskHandle_t taskHandle0;

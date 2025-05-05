@@ -6,12 +6,12 @@
 #include <WiFi.h>
 #include <lvgl.h>
 
+#include "audio.h"
 #include "controller.h"
 #include "device.h"
+#include "leds.h"
 #include "screen.h"
 #include "storage.h"
-#include "leds.h"
-#include "audio.h"
 
 #define LOG_LEVEL LOG_LEVEL_NOTICE
 #define LABEL "Main-TS"
@@ -20,13 +20,15 @@ void setup(void) {
   // auto mem = heap_caps_malloc(LV_MEM_SIZE, MALLOC_CAP_SPIRAM);
   initAll();
   ESP_LOGI(LABEL, "Initialized");
+  void* lvglSpace = heap_caps_malloc(LV_MEM_SIZE, MALLOC_CAP_SPIRAM);
+  ESP_LOGI(LABEL, "LV_MEM_ADR: %p", lvglSpace);
   // ESP_LOGI(LABEL, "LV MEM LOCATION: %p", mem);
 }
 
 extern void startScan();
 extern void checkWifi();
 int i = 0;
-bool plotting = false;
+bool plotting = true;
 void loop() {
   if (button1.pressed()) {
     // startScan();
@@ -41,9 +43,10 @@ void loop() {
     // rotateScreen();
   }
 
-  // loopLvgl();
-  if(plotting) {
+  loopLvgl();
+  if (plotting) {
     // updateLedsWithAudio(readAnalogAudio());
+    ledsAll(true);
     // plotAudio();
   }
   // reactToTouch();
@@ -62,5 +65,4 @@ void loop() {
       stopI2s();
     }
   }
-
 }

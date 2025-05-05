@@ -45,9 +45,9 @@ void createLedGroups() {
   createLedGroup(ledsPerGroup * 4 - 1, 3, -1, 1);
 }
 
-CRGB scroll(int pos) {
+CRGB scroll(int pos, int size = ledsPerGroup) {
   CRGB color(0, 0, 0);
-  float threshold1 = ledsPerGroup / 3.0f;
+  float threshold1 = size / 3.0f;
   float threshold2 = threshold1 * 2;
 
   if (pos < threshold1) {
@@ -58,16 +58,28 @@ CRGB scroll(int pos) {
     color.g = ((float)(pos - threshold1) / threshold1) * 170;
     color.r = 170 - color.g;
     color.b = 0;
-  } else if (pos <= ledsPerGroup) {
-    color.b = ((float)(pos - threshold2) / threshold1) * 255;
+  } else if (pos <= size) {
     color.g = 170 - color.b;
     color.r = 1;
+    color.b = ((float)(pos - threshold2) / threshold1) * 255;
   }
   return color;
 }
 
+CRGB getRainbowColor(int pos, int size) {
+  // Ensure pos is within bounds
+  pos = pos % size;
+
+  // Map pos to a hue value (0-255 for a full rainbow)
+  uint8_t hue = (pos * 255) / size;
+
+  // Return the color in HSV format (full saturation and brightness)
+  return CHSV(hue, 255, 255);
+}
+
 void setupLeds(int totalLeds) {
   // ledCount = totalLeds;
+  // pinMode(LED_PIN, OUTPUT);
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, ledCount).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
   FastLED.setMaxPowerInVoltsAndMilliamps(5, 3000);
@@ -104,14 +116,14 @@ void ledsAll(bool update) {
     offset = Serial.readString().toInt();
     ESP_LOGI(LABEL, "Received data: %d", offset);
   }
-  if ((millis() - ledUpdateMillis) > 25) {
+  if ((millis() - ledUpdateMillis) > 50) {
     for (int i = 0; i < ledCount; i++) {
       leds[i] = CRGB::Black;
     }
     // LOG_DEBUG(LABEL, "Updating at offset " << offset);
     ledUpdateMillis = millis();
     for (int i = ledOffset; i < ledCount; i++) {
-      leds[i] = scroll((i + offset) % ledCount);
+      leds[i] = getRainbowColor(i + offset, ledCount);
     }
     if (update) {
       offset = (offset + 1) % ledCount;
@@ -135,8 +147,9 @@ void updateLedsWithIntensity(uint16_t average) {
       int pos = ledGroups[i][j];
       float intensity = average / (float)intensityThreshold;
       float marker = j / (float)ledsPerGroup;
-      ESP_LOGD(LABEL, "Updating led %d: Average: %d Intensity: %f Marker: %f", pos, average, intensity, marker);
-      if (intensity >=  marker) {
+      ESP_LOGD(LABEL, "Updating led %d: Average: %d Intensity: %f Marker: %f", pos, average,
+               intensity, marker);
+      if (intensity >= marker) {
         // ESP_LOGD(LABEL, "Triggered led %d: Color: %d", pos, j * 255 / ledsPerGroup);
         leds[pos] = scroll(j);
       } else {
