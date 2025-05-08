@@ -1,21 +1,31 @@
 #pragma once
 
-#include <tuple>
+#include <lvgl.h>
 
 #include "Observable.h"
+#include "utils.h"
 
 using namespace std;
 
-using Pair = tuple<int, int>;
+enum Screen {
+  CALIBRATION,
+  MAIN,
+  SETTINGS,
+};
 
 class ScreenState {
  public:
-  Observable<tuple<int, int>> screenOffset;
+  Observable<Pair> screenOffset;
 
   ScreenState() : screenOffset({0, 0}) {}
 
   void init();
+  void goToScreen(Screen screen);
 
  private:
+  Screen activeScreenType;
+  lv_obj_t* activeScreen;
+
   void loadOffset();
+  void applyCalibration();
 };

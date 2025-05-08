@@ -21,7 +21,7 @@ using namespace std;
 
 #define LED_COUNT 16
 
-auto screenState = ScreenState();
+ScreenState screenState = ScreenState();
 
 int vprintfSerial(const char* fmt, va_list args) {
   char log_print_buffer[256];

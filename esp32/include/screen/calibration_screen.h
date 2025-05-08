@@ -1,4 +1,6 @@
 
+#include <lvgl.h>
+
 #include "screen/ScreenState.h"
 
 class CalibrationState {
@@ -8,4 +10,4 @@ class CalibrationState {
  private:
 };
 
-void buildCalibrationScreen();
+lv_obj_t* buildCalibrationScreen();

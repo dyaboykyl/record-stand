@@ -1,5 +1,7 @@
 
 
+#include "screen/screen.h"
+
 #include <Adafruit_CST8XX.h>
 #include <Arduino_GFX_Library.h>
 #include <esp_log.h>
@@ -7,8 +9,9 @@
 
 #include "device.h"
 #include "screen/calibration_screen.h"
+#include "screen/main_screen.h"
 
-#define LABEL "Screen"
+static auto logger = Logger("Screen");
 
 bool touchOK;
 
@@ -49,7 +52,7 @@ bool setupGfx() {
   GFX_EXTRA_PRE_INIT();
 #endif
   if (!gfx->begin()) {
-    Serial.println("gfx->begin() failed!");
+    logger.warn("gfx->begin() failed!");
     return false;
   }
   gfx->fillScreen(WHITE);
@@ -90,7 +93,7 @@ void setupLvgl() {
   // }
 
   if (!disp_draw_buf) {
-    Serial.println("LVGL disp_draw_buf allocate failed!");
+    logger.warn("LVGL disp_draw_buf allocate failed!");
   } else {
     disp = lv_display_create(screenWidth, screenHeight);
     lv_display_set_flush_cb(disp, my_disp_flush);
@@ -106,7 +109,7 @@ void setupLvgl() {
 
 void initScreen() {
   if (!setupGfx()) {
-    Serial.println("GFX setup failed!");
+    logger.warn("GFX setup failed!");
     return;
   }
 
@@ -118,11 +121,11 @@ void initScreen() {
   //                              LVGL_VERSION_MINOR) "." GFX_STR(LVGL_VERSION_PATCH) ")");
   // lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 
-  Serial.println("Setup done");
+  logger.info("Setup done");
   // gfx->draw
 }
 
-void startScreen() { buildCalibrationScreen(); }
+void startScreen() { screenState.goToScreen(Screen::MAIN); }
 
 void screenLoop() {
   lv_task_handler(); /* let the GUI do its work */

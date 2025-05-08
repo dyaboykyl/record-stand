@@ -39,10 +39,11 @@
 #include <Arduino.h>
 #include <esp_log.h>
 
-#include <tuple>
-
 #include "Observable.h"
 #include "logging.h"
+#include "screen/calibration_screen.h"
+#include "screen/main_screen.h"
+#include "screen/settings_screen.h"
 #include "storage.h"
 #include "utils.h"
 
@@ -53,11 +54,39 @@ static auto logger = Logger("ScreenState");
 void ScreenState::init() {
   logger.info("[init]");
   loadOffset();
-  screenOffset.subscribe(
-      [this](const Pair& offset) { writeToStorage(SCREEN_OFFSET, pairToString(offset)); });
+  screenOffset.subscribe([this](const Pair& offset) {
+    writeToStorage(SCREEN_OFFSET, pairToString(offset));
+    applyCalibration();
+  });
+}
+
+void ScreenState::goToScreen(Screen screen) {
+  if (screen == activeScreenType) {
+    return;
+  }
+
+  activeScreenType = screen;
+  switch (screen) {
+    case CALIBRATION:
+      activeScreen = buildCalibrationScreen();
+      break;
+    case MAIN:
+      activeScreen = buildMainScreen();
+      break;
+    case SETTINGS:
+      activeScreen = buildSettingsScreen();
+      break;
+  }
+  applyCalibration();
 }
 
 void ScreenState::loadOffset() {
   auto offsetString = readFromStorage(SCREEN_OFFSET);
   screenOffset.set(pairFromString(offsetString));
+}
+
+void ScreenState::applyCalibration() {
+  auto offset = screenOffset.get();
+  lv_obj_set_style_translate_x(activeScreen, offset.x, 0);
+  lv_obj_set_style_translate_y(activeScreen, offset.y, 0);
 }

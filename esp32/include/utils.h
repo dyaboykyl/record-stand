@@ -1,3 +1,4 @@
+#pragma once
 
 #include <lvgl.h>
 #include <pthread.h>
@@ -7,7 +8,14 @@
 
 using namespace std;
 
-using Pair = tuple<int, int>;
+struct Pair {
+  int x;
+  int y;
+
+  bool operator!=(const Pair &other) const {
+    return x != other.x || y != other.y;
+  }
+};
 
 inline Pair pairFromString(string str) {
   int x = 0, y = 0;
@@ -18,11 +26,11 @@ inline Pair pairFromString(string str) {
       y = stoi(str.substr(pos + 1));
     }
   }
-  return make_tuple(x, y);
+  return {x, y};
 };
 
 inline string pairToString(const Pair &offset) {
-  return to_string(get<0>(offset)) + "," + to_string(get<1>(offset));
+  return to_string(offset.x) + "," + to_string(offset.y);
 }
 
 static lv_color_t BASE_ONE = lv_color_hex(0x815432);

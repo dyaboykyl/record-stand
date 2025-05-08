@@ -1,6 +1,7 @@
 
+#include "screen/main_screen.h"
+
 #include <lvgl.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,15 +10,20 @@
 #include <thread>
 
 #include "calibration.h"
+#include "screen/screen.h"
 #include "utils.h"
 
 using namespace std;
+
+static auto logger = Logger("MainScreen");
 
 string songTitle = "Some very very long song title";
 string artistName = "The very long artists of song";
 string action = "Listening";
 
 static lv_anim_t listeningAnimation;
+lv_obj_t *mainScreen = nullptr;
+static lv_obj_t *parent = nullptr;
 
 void buildNowPlayingLabel(lv_obj_t *container) {
   static lv_style_t style;
@@ -60,7 +66,7 @@ void buildArtistLabel(lv_obj_t *container) {
 }
 
 void buildNowPlayingInfo() {
-  lv_obj_t *container = lv_obj_create(lv_screen_active());
+  lv_obj_t *container = lv_obj_create(parent);
   lv_obj_set_layout(container, LV_LAYOUT_FLEX);
   lv_obj_set_flex_align(container, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER,
                         LV_FLEX_ALIGN_CENTER);
@@ -97,7 +103,7 @@ void actionAnimation(lv_obj_t *actionLed) {
 }
 
 void buildAction() {
-  lv_obj_t *container = lv_obj_create(lv_screen_active());
+  lv_obj_t *container = lv_obj_create(parent);
   lv_obj_set_layout(container, LV_LAYOUT_FLEX);
   lv_obj_set_flex_align(container, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER,
                         LV_FLEX_ALIGN_CENTER);
@@ -125,9 +131,28 @@ void buildAction() {
   actionAnimation(actionLed);
 }
 
-void buildMainScreen() {
-  calibrationLines();
-  buildNowPlayingInfo();
-  buildAction();
-  //
+static void title() {
+  lv_obj_t *title = lv_label_create(mainScreen);
+  lv_obj_set_style_text_color(title, lv_color_black(), 0);
+  lv_obj_set_style_text_font(title, &lv_font_montserrat_28, 0);
+  lv_obj_set_style_align(title, LV_ALIGN_CENTER, 0);
+  lv_label_set_text(title, "Home");
+  lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 80);
+}
+
+lv_obj_t *buildMainScreen() {
+  if (mainScreen == nullptr) {
+    logger.info("Creating");
+    mainScreen = lv_obj_create(NULL);
+    parent = lv_obj_create(mainScreen);
+    lv_obj_align(parent, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_size(parent, SCREEN_DIAMETER * 1.15, SCREEN_DIAMETER * 1.15);
+    // lv_obj_set_style_bg_color(mainScreen, lv_color_white(), 0);
+    buildNowPlayingInfo();
+    buildAction();
+    // title();
+  }
+  logger.info("Loading");
+  lv_screen_load_anim(mainScreen, LV_SCR_LOAD_ANIM_OVER_BOTTOM, 250, 0, false);
+  return parent;
 }
