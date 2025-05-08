@@ -4,24 +4,35 @@
 #include <Arduino.h>
 
 #include "controller.h"
+#include "device.h"
 #include "leds.h"
 #include "screen.h"
+#include "screen/ScreenController.h"
+#include "screen/calibration_screen.h"
 
 #define LABEL "Main"
 
-void setup() { initAll(); }
+auto screenController = ScreenController();
 
-// extern void ledsColorFromSerial();
+void runControllers() {
+  ESP_LOGI(LABEL, "Running Controllers...");
+  screenController.init();
+  // screenController.screenOffset.set({0, 4});
+  ESP_LOGI(LABEL, "Done running Controllers...");
+}
+
+void setup() {
+  initAll();
+  runControllers();
+  startScreen();
+}
+
 void loop() {
-  if (buttonOnePressed()) {
-    start();
-  }
-  // ESP_LOGI(LABEL, "Looping");
-  delay(100);
-  // ledsColorFromSerial();
+  delay(5);
+  screenLoop();
 
-  if (Serial.available() > 0) {
-    auto intensity = atoi(Serial.readString().c_str());
-    setIntensityThreshold(intensity);
+  if (button1.pressed()) {
+    ESP_LOGI(LABEL, "Button 1 pressed");
+    runControllers();
   }
 }

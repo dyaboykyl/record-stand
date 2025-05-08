@@ -1,15 +1,19 @@
 
 #pragma once
 
-#include <WString.h>
+#include <string>
+
+using namespace std;
 
 enum StorageKey {
-  WIFI_SSID_KEY,
-  WIFI_PASSWORD_KEY,
+  WIFI_SSID,
+  WIFI_PASSWORD,
+
+  SCREEN_OFFSET,
 
   KEY_COUNT
 };
 
 void initStorage();
-void writeToStorage(StorageKey key, String value);
-String readFromStorage(StorageKey key);
+void writeToStorage(StorageKey key, string value);
+string readFromStorage(StorageKey key);

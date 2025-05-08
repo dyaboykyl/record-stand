@@ -218,7 +218,7 @@ void checkConnect(lv_timer_t *timer) {
   }
 }
 
-void tryConnectToWifi(String ssid = "", String password = "") {
+void tryConnectToWifi(string ssid = "", string password = "") {
   hide(keyboard);
   show(loadingSpinner);
   lv_label_set_text(statusLabel, "Connecting...");
@@ -327,13 +327,13 @@ void startScan() {
 }
 
 void checkWifi() {
-  auto ssid = readFromStorage(WIFI_SSID_KEY);
-  if (!ssid || ssid == "") {
+  auto ssid = readFromStorage(WIFI_SSID);
+  if (ssid.empty()) {
     return;
   }
 
-  auto password = readFromStorage(WIFI_PASSWORD_KEY);
-  if (!password || password == "") {
+  auto password = readFromStorage(WIFI_PASSWORD);
+  if (password.empty()) {
     return;
   }
 

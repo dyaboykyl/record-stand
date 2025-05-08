@@ -1,32 +1,33 @@
 #include "storage.h"
 
 #include <EEPROM.h>
-// #include <EasyLogger.h>
 #include <WString.h>
+
+#include "logging.h"
 
 #define VALUE_SIZE 100
 #define EEPROM_SIZE (KEY_COUNT * VALUE_SIZE)
 
-#define LABEL "Storage"
+static auto logger = Logger("Storage");
 
 void initStorage() {
   if (!EEPROM.begin(EEPROM_SIZE)) {
     // LOG_ERROR(LABEL, "failed to init EEPROM");
     return;
   }
-  ESP_LOGI(LABEL, "Storage initialized");
+  logger.info("Storage initialized");
 }
 
-void writeToStorage(StorageKey key, String value) {
+void writeToStorage(StorageKey key, string value) {
   int addr = key * VALUE_SIZE;
-  EEPROM.writeString(addr, value);
+  EEPROM.writeString(addr, String(value.c_str()));
   auto result = EEPROM.commit();
-  // LOG_DEBUG(LABEL, "wrote " << key << ": " << value << " result: " << result);
+  logger.debug("wrote key: %d value: %s ", key, value.c_str());
 }
 
-String readFromStorage(StorageKey key) {
+string readFromStorage(StorageKey key) {
   int addr = key * VALUE_SIZE;
-  String value = EEPROM.readString(addr);
-  // LOG_DEBUG(LABEL, "read " << key << ": " << value);
+  string value = EEPROM.readString(addr).c_str();
+  logger.debug("[read] key: %d, value: %s", key, value.c_str());
   return value;
 }

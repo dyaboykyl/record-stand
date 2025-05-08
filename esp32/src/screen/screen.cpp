@@ -112,7 +112,6 @@ void initScreen() {
 
   initTouch();
   setupLvgl();
-  buildCalibrationScreen();
 
   // lv_obj_t *label = lv_label_create(lv_scr_act());
   // lv_label_set_text(label, "Hello Arduino, I'm LVGL!(V" GFX_STR(LVGL_VERSION_MAJOR) "." GFX_STR(
@@ -123,7 +122,9 @@ void initScreen() {
   // gfx->draw
 }
 
-void loopLvgl() {
+void startScreen() { buildCalibrationScreen(); }
+
+void screenLoop() {
   lv_task_handler(); /* let the GUI do its work */
   delay(5);
 }

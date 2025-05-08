@@ -43,7 +43,7 @@ void loop() {
     // rotateScreen();
   }
 
-  loopLvgl();
+  screenLoop();
   if (plotting) {
     // updateLedsWithAudio(readAnalogAudio());
     ledsAll(true);

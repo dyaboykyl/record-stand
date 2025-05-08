@@ -7,11 +7,14 @@
 #include "audio.h"
 #include "device.h"
 #include "leds.h"
+#include "logging.h"
 #include "network.h"
 #include "screen/screen.h"
 #include "secrets.h"
 #include "storage.h"
 #include "wav.h"
+
+using namespace std;
 
 #define LABEL "Controller"
 
@@ -31,7 +34,7 @@ void initLogging() {
   Serial.begin(115200);
 
   esp_log_set_vprintf(vprintfSerial);
-  esp_log_level_set("*", ESP_LOG_DEBUG);
+  setLevel(ESP_LOG_DEBUG);
 
   Serial.setDebugOutput(true);
 
@@ -47,7 +50,7 @@ void initLogging() {
 
 void initAll() {
   initLogging();
-  // initStorage();
+  initStorage();
   initAudio();
   initButtons();
   initScreen();
@@ -73,9 +76,9 @@ void runTask(TaskFunction_t task, int core) {
 
 void runWavTask() { runTask(recordWavAndSend, 1); }
 
-void persistWifiCredentials(String ssid, String password) {
-  writeToStorage(WIFI_SSID_KEY, ssid);
-  writeToStorage(WIFI_PASSWORD_KEY, password);
+void persistWifiCredentials(string ssid, string password) {
+  writeToStorage(StorageKey::WIFI_SSID, ssid);
+  writeToStorage(StorageKey::WIFI_PASSWORD, password);
 }
 
 void connectToSavedWifi(bool connect) {
@@ -83,18 +86,18 @@ void connectToSavedWifi(bool connect) {
     return;
   }
 
-#ifdef WIFI_SSID
-  connectToWifi(WIFI_SSID, WIFI_PASSWORD, connect);
+#ifdef DEV_WIFI_SSID
+  connectToWifi(DEV_WIFI_SSID, DEV_WIFI_PASSWORD, connect);
   return;
 #endif
 
-  String ssid = readFromStorage(WIFI_SSID_KEY);
-  if (!ssid || ssid == "") {
+  auto ssid = readFromStorage(StorageKey::WIFI_SSID);
+  if (ssid.empty()) {
     return;
   }
 
-  String password = readFromStorage(WIFI_PASSWORD_KEY);
-  if (!password || password == "") {
+  auto password = readFromStorage(StorageKey::WIFI_PASSWORD);
+  if (password.empty()) {
     return;
   }
 

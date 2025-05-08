@@ -6,4 +6,5 @@
 
 extern lv_obj_t* parent;
 void initScreen();
-void loopLvgl();
+void startScreen();
+void screenLoop();
