@@ -6,25 +6,21 @@
 
 #include "Observable.h"
 #include "logging.h"
-#include "screen/ScreenController.h"
+#include "screen/ScreenState.h"
 #include "screen/calibration.h"
 #include "screen/screen.h"
 #include "utils.h"
 
-#define LABEL "CalibrationScreen"
+extern ScreenState screenState;
 
-extern ScreenController screenController;
-
-static auto logger = Logger(LABEL);
+static auto logger = Logger("CalibrationScreen");
 lv_obj_t* parent;
 
-void CalibrationScreenController::init() {
+void CalibrationState::init() {
   logger.info("[init]");
-  screenController->screenOffset.subscribe(
+  screenState.screenOffset.subscribe(
       [this](const Pair& offset) {
         logger.debug("subscribe offset: %d, %d", get<0>(offset), get<1>(offset));
-        // lv_obj_set_style_transform_pivot_x(parent, SCREEN_RADIUS, 0);
-        // lv_obj_set_style_transform_pivot_y(parent, SCREEN_RADIUS, 0);
         lv_obj_set_style_translate_x(parent, get<0>(offset), 0);
         lv_obj_set_style_translate_y(parent, get<1>(offset), 0);
       },
@@ -59,19 +55,13 @@ static void moveButtonHandler(lv_event_t* e) {
       r = -10;
       break;
     default:
-      ESP_LOGW(LABEL, "Unknown direction");
+      logger.warn("Unknown direction");
   }
-  auto offset = screenController.screenOffset.get();
+  auto offset = screenState.screenOffset.get();
   auto xTranslate = get<0>(offset) + x;
   auto yTranslate = get<1>(offset) + y;
-  ESP_LOGI(LABEL, "Move %c pressed. New x: %d new y: %d", direction[0], xTranslate, yTranslate);
-  // lv_obj_set_style_transform_rotation(parent, r + lv_obj_get_style_transform_rotation(parent, 0),
-  //                                     0);
-  screenController.screenOffset.set({xTranslate, yTranslate});
-  // lv_obj_set_style_transform_pivot_x(parent, SCREEN_RADIUS, 0);
-  // lv_obj_set_style_transform_pivot_y(parent, SCREEN_RADIUS, 0);
-  // lv_obj_set_style_translate_x(parent, xTranslate, 0);
-  // lv_obj_set_style_translate_y(parent, yTranslate, 0);
+  logger.debug("Move %c pressed. New x: %d new y: %d", direction[0], xTranslate, yTranslate);
+  screenState.screenOffset.set({xTranslate, yTranslate});
 }
 
 int buttonSize = 70;
@@ -86,11 +76,9 @@ void moveButton(const char* direction, int xOffset, int yOffset) {
 
   lv_obj_t* label = lv_label_create(button);
   lv_label_set_text(label, direction);
-  // lv_obj_set_style_text_color(label, lv_color_white(), 0);
   lv_obj_set_style_text_font(label, &lv_font_montserrat_32, 0);
   lv_obj_center(label);
-  ESP_LOGI(LABEL, "Created button for %s", direction);
-  Serial.println("Created button");
+  logger.info("Created button for %s", direction);
 }
 
 void title() {
@@ -109,7 +97,7 @@ void offsetText() {
   lv_obj_set_style_align(offsetLabel, LV_ALIGN_CENTER, 0);
   lv_obj_align(offsetLabel, LV_ALIGN_TOP_LEFT, 350, 150);
 
-  screenController.screenOffset.subscribe(
+  screenState.screenOffset.subscribe(
       [offsetLabel](const Pair& offset) {
         lv_label_set_text(offsetLabel, ("Offset " + pairToString(offset)).c_str());
       },
@@ -119,8 +107,8 @@ void offsetText() {
 void buildCalibrationScreen() {
   // disable(lv_screen_active());
   parent = lv_obj_create(lv_screen_active());
-  static auto calibrationScreenController = CalibrationScreenController(&screenController);
-  calibrationScreenController.init();
+  static auto calibrationScreenState = CalibrationState();
+  calibrationScreenState.init();
   lv_obj_align(parent, LV_ALIGN_CENTER, 0, 0);
   lv_obj_set_size(parent, SCREEN_DIAMETER * 1.15, SCREEN_DIAMETER * 1.15);
   // lv_obj_set_style_opa(parent, LV_OPA_0, 0);

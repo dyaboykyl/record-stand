@@ -8,11 +8,11 @@ using namespace std;
 
 using Pair = tuple<int, int>;
 
-class ScreenController {
+class ScreenState {
  public:
   Observable<tuple<int, int>> screenOffset;
 
-  ScreenController() : screenOffset({0, 0}) {}
+  ScreenState() : screenOffset({0, 0}) {}
 
   void init();
 

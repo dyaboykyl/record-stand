@@ -9,6 +9,7 @@
 #include "leds.h"
 #include "logging.h"
 #include "network.h"
+#include "screen/ScreenState.h"
 #include "screen/screen.h"
 #include "secrets.h"
 #include "storage.h"
@@ -19,6 +20,8 @@ using namespace std;
 #define LABEL "Controller"
 
 #define LED_COUNT 16
+
+auto screenState = ScreenState();
 
 int vprintfSerial(const char* fmt, va_list args) {
   char log_print_buffer[256];
@@ -48,6 +51,8 @@ void initLogging() {
   ESP_LOGI(LABEL, "Logging ready");
 }
 
+void initState() { screenState.init(); }
+
 void initAll() {
   initLogging();
   initStorage();
@@ -56,6 +61,7 @@ void initAll() {
   initScreen();
   // allocateWavSpace();
   setupLeds(LED_COUNT);
+  initState();
 }
 
 TaskHandle_t taskHandle0;

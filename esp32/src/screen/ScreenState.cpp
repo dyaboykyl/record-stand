@@ -34,7 +34,7 @@
  */
 
 // #include <observable/observable.hpp>
-#include "screen/ScreenController.h"
+#include "screen/ScreenState.h"
 
 #include <Arduino.h>
 #include <esp_log.h>
@@ -48,16 +48,16 @@
 
 using namespace std;
 
-static auto logger = Logger("ScreenController");
+static auto logger = Logger("ScreenState");
 
-void ScreenController::init() {
+void ScreenState::init() {
   logger.info("[init]");
   loadOffset();
   screenOffset.subscribe(
       [this](const Pair& offset) { writeToStorage(SCREEN_OFFSET, pairToString(offset)); });
 }
 
-void ScreenController::loadOffset() {
+void ScreenState::loadOffset() {
   auto offsetString = readFromStorage(SCREEN_OFFSET);
   screenOffset.set(pairFromString(offsetString));
 }
