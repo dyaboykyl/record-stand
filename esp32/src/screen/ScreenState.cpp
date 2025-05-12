@@ -60,24 +60,30 @@ void ScreenState::init() {
   });
 }
 
-void ScreenState::goToScreen(Screen screen) {
-  if (screen == activeScreenType) {
+void ScreenState::goToScreen(Screen screenType) {
+  if (screenType == activeScreenType) {
     return;
   }
 
-  activeScreenType = screen;
-  switch (screen) {
+  lv_obj_t* nextScreen;
+  auto animation = LV_SCR_LOAD_ANIM_NONE;
+  switch (screenType) {
     case CALIBRATION:
-      activeScreen = buildCalibrationScreen();
+      nextScreen = buildCalibrationScreen();
+      animation = LV_SCR_LOAD_ANIM_MOVE_TOP;
       break;
     case MAIN:
-      activeScreen = buildMainScreen();
+      nextScreen = buildMainScreen();
+      animation =
+          activeScreenType == Screen::SETTINGS ? LV_SCR_LOAD_ANIM_MOVE_TOP : LV_SCR_LOAD_ANIM_NONE;
       break;
     case SETTINGS:
-      activeScreen = buildSettingsScreen();
+      nextScreen = buildSettingsScreen();
+      animation = activeScreenType == Screen::MAIN ? LV_SCR_LOAD_ANIM_MOVE_BOTTOM
+                                                   : LV_SCR_LOAD_ANIM_MOVE_TOP;
       break;
   }
-  applyCalibration();
+  lv_screen_load_anim(activeScreen, animation, 250, 0, false);
 }
 
 void ScreenState::loadOffset() {

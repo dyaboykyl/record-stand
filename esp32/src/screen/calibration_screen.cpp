@@ -110,7 +110,23 @@ void moveButton(const char* direction, int xOffset, int yOffset) {
   logger.info("Created button for %s", direction);
 }
 
-void title() {
+static void doneButton() {
+  lv_obj_t* button = lv_button_create(parent);
+  lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -50);
+  lv_obj_remove_flag(button, LV_OBJ_FLAG_PRESS_LOCK);
+  enable(button);
+  lv_obj_set_size(button, 70, 60);
+
+  lv_obj_t* label = lv_label_create(button);
+  lv_label_set_text(label, LV_SYMBOL_HOME);
+  lv_obj_set_style_text_font(label, &lv_font_montserrat_32, 0);
+  lv_obj_center(label);
+
+  lv_obj_add_event_cb(
+      button, [](lv_event_t* e) { screenState.goToScreen(Screen::SETTINGS); }, LV_EVENT_CLICKED, NULL);
+}
+
+static void title() {
   lv_obj_t* title = lv_label_create(parent);
   lv_obj_set_style_text_color(title, lv_color_black(), 0);
   lv_obj_set_style_text_font(title, &lv_font_montserrat_28, 0);
@@ -135,8 +151,10 @@ void offsetText() {
 
 lv_obj_t* calibrationScreen = nullptr;
 lv_obj_t* buildCalibrationScreen() {
+  auto animation = LV_SCR_LOAD_ANIM_OVER_TOP;
   if (calibrationScreen == nullptr) {
     logger.info("Creating");
+    animation = LV_SCR_LOAD_ANIM_NONE;
     calibrationScreen = lv_obj_create(NULL);
     parent = lv_obj_create(calibrationScreen);
     static auto calibrationScreenState = CalibrationState();
@@ -146,6 +164,7 @@ lv_obj_t* buildCalibrationScreen() {
     calibrationLines();
     title();
     offsetText();
+    doneButton();
     moveButton(LV_SYMBOL_RIGHT, buttonOffset + buttonSize / 2, 0);
     moveButton(LV_SYMBOL_LEFT, -buttonOffset - buttonSize / 2, 0);
     moveButton(LV_SYMBOL_UP, 0, -buttonOffset - buttonSize / 2);
@@ -153,6 +172,6 @@ lv_obj_t* buildCalibrationScreen() {
     moveButton(LV_SYMBOL_REFRESH, 0, 0);
   }
   logger.info("Loading");
-  lv_screen_load_anim(calibrationScreen, LV_SCR_LOAD_ANIM_OVER_TOP, 250, 0, false);
+  lv_screen_load_anim(calibrationScreen, animation, 250, 0, false);
   return parent;
 }

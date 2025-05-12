@@ -25,7 +25,7 @@ static lv_anim_t listeningAnimation;
 lv_obj_t *mainScreen = nullptr;
 static lv_obj_t *parent = nullptr;
 
-void buildNowPlayingLabel(lv_obj_t *container) {
+void nowPlayingLabel(lv_obj_t *container) {
   static lv_style_t style;
   lv_style_init(&style);
   lv_style_set_text_font(&style, &lv_font_montserrat_18);
@@ -37,7 +37,7 @@ void buildNowPlayingLabel(lv_obj_t *container) {
   lv_obj_align(label, LV_ALIGN_CENTER, 0, -100);
 }
 
-void buildSongTitleLabel(lv_obj_t *container) {
+void songTitleLabel(lv_obj_t *container) {
   static lv_style_t style;
   lv_style_init(&style);
   lv_style_set_text_font(&style, &lv_font_montserrat_32);
@@ -65,7 +65,7 @@ void buildArtistLabel(lv_obj_t *container) {
   lv_obj_align(label, LV_ALIGN_CENTER, 0, -20);
 }
 
-void buildNowPlayingInfo() {
+void nowPlayingInfo() {
   lv_obj_t *container = lv_obj_create(parent);
   lv_obj_set_layout(container, LV_LAYOUT_FLEX);
   lv_obj_set_flex_align(container, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER,
@@ -77,8 +77,8 @@ void buildNowPlayingInfo() {
   lv_obj_set_scrollbar_mode(container, LV_SCROLLBAR_MODE_OFF);
   lv_obj_align(container, LV_ALIGN_CENTER, 0, -40);
 
-  buildNowPlayingLabel(container);
-  buildSongTitleLabel(container);
+  nowPlayingLabel(container);
+  songTitleLabel(container);
   buildArtistLabel(container);
 }
 
@@ -86,7 +86,7 @@ void actionLedAnimationCallback(void *actionLed, int32_t value) {
   lv_obj_set_style_opa((lv_obj_t *)actionLed, value, 0);
 }
 
-void actionAnimation(lv_obj_t *actionLed) {
+void ledAnimation(lv_obj_t *actionLed) {
   // LV_LOG_USER("Creating LED animation");
   lv_anim_init(&listeningAnimation);
   // lv_anim_set_exec_cb(&animation, scroll_anim_y_cb);
@@ -102,7 +102,7 @@ void actionAnimation(lv_obj_t *actionLed) {
   lv_anim_start(&listeningAnimation);
 }
 
-void buildAction() {
+void listeningLed() {
   lv_obj_t *container = lv_obj_create(parent);
   lv_obj_set_layout(container, LV_LAYOUT_FLEX);
   lv_obj_set_flex_align(container, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER,
@@ -128,31 +128,50 @@ void buildAction() {
   lv_obj_add_style(label, &labelStyle, 0);
   // lv_obj_align(label, LV_ALIGN_CENTER, 0, 20);
 
-  actionAnimation(actionLed);
+  ledAnimation(actionLed);
 }
 
-static void title() {
-  lv_obj_t *title = lv_label_create(mainScreen);
-  lv_obj_set_style_text_color(title, lv_color_black(), 0);
-  lv_obj_set_style_text_font(title, &lv_font_montserrat_28, 0);
-  lv_obj_set_style_align(title, LV_ALIGN_CENTER, 0);
-  lv_label_set_text(title, "Home");
-  lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 80);
+void settingsButton() {
+  lv_obj_t *button = lv_btn_create(parent);
+  lv_obj_set_size(button, 100, 50);
+  lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -50);
+
+  static lv_style_t buttonStyle;
+  lv_style_init(&buttonStyle);
+  lv_style_set_text_font(&buttonStyle, &lv_font_montserrat_18);
+  lv_style_set_text_align(&buttonStyle, LV_TEXT_ALIGN_CENTER);
+  lv_style_set_radius(&buttonStyle, 10);
+
+  lv_obj_add_style(button, &buttonStyle, 0);
+
+  lv_obj_t *label = lv_label_create(button);
+  lv_label_set_text(label, LV_SYMBOL_SETTINGS);
+  lv_obj_center(label);
+
+  lv_obj_add_event_cb(
+      button,
+      [](lv_event_t *e) {
+        logger.info("Settings button clicked");
+        screenState.goToScreen(Screen::SETTINGS);
+      },
+      LV_EVENT_CLICKED, NULL);
 }
 
 lv_obj_t *buildMainScreen() {
+  auto animation = LV_SCR_LOAD_ANIM_OVER_TOP;
   if (mainScreen == nullptr) {
     logger.info("Creating");
+    animation = LV_SCR_LOAD_ANIM_NONE;
     mainScreen = lv_obj_create(NULL);
     parent = lv_obj_create(mainScreen);
     lv_obj_align(parent, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_size(parent, SCREEN_DIAMETER * 1.15, SCREEN_DIAMETER * 1.15);
     // lv_obj_set_style_bg_color(mainScreen, lv_color_white(), 0);
-    buildNowPlayingInfo();
-    buildAction();
+    nowPlayingInfo();
+    listeningLed();
     // title();
   }
   logger.info("Loading");
-  lv_screen_load_anim(mainScreen, LV_SCR_LOAD_ANIM_OVER_BOTTOM, 250, 0, false);
+  lv_screen_load_anim(mainScreen, animation, 250, 0, false);
   return parent;
 }
