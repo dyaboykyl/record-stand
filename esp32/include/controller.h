@@ -8,8 +8,15 @@
 #include "AppState.h"
 
 extern AppState appState;
+extern QueueHandle_t queueHandle;
+
+struct BleMessage {
+  size_t length;
+  char data[512];  // Adjust size as needed (max BLE packet size is 512, usually 20–100 bytes)
+};
 
 void initAll();
+void processBleQueue(BleMessage &message);
 void initLogging();
 void start();
 void persistWifiCredentials(String ssid, String password);

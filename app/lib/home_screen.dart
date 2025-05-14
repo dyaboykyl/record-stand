@@ -31,6 +31,7 @@ abstract class _HomeScreenStoreBase with Store {
 
   @computed
   bool get connectButtonEnabled =>
+      connectionStore.device == null &&
       !connectionStore.connected &&
       !connectionStore.ready &&
       !connectionStore.isConnecting &&

@@ -64,11 +64,13 @@ void AppState::applyCalibration() {
   lv_obj_set_style_translate_y(activeScreenParent, offset.y, 0);
 }
 
+static std::vector<std::string> data;
 void AppState::onNewIdentifyResult(const char* resultString) {
-  auto data = split(resultString, "+=+");
+  logger.info("[onNewIdentifyResult] %s", resultString);
+  split(string(resultString), "+=+", data);
   if (data[3] == NO_RESULT) {
     songInfo.set({string(data[0]), string(data[1]), string(data[2])});
-    logger.info("Song: %s - %s", songInfo.get().artist.c_str(), songInfo.get().song.c_str());
+    // logger.info("Song: %s - %s", songInfo.get().artist.c_str(), songInfo.get().song.c_str());
   } else {
     identifyError.set(string(data[3]));
     logger.warn("Identify error: %s", identifyError.get().c_str());

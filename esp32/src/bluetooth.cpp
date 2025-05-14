@@ -5,6 +5,7 @@
 #include <BLEUtils.h>
 
 #include "AppState.h"
+#include "controller.h"
 #include "logging.h"
 #include "utils.h"
 
@@ -29,8 +30,15 @@ class CharacteristicCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *characteristic) {
     auto value = characteristic->getValue();
     auto length = characteristic->getLength();
-    logger.info("[onWrite] size=%d: %s", length, value.c_str());
-    appState.onNewIdentifyResult(value.c_str());
+    if (length <= 0 || length >= sizeof(BleMessage::data)) {
+      return;
+    }
+
+    BleMessage message = {};
+    message.length = value.length();
+    memcpy(message.data, value.c_str(), message.length);
+    message.data[message.length] = '\0';
+    xQueueSend(queueHandle, &message, 0);
   }
 
   void onRead(BLECharacteristic *characteristic) {
@@ -48,6 +56,7 @@ class CharacteristicCallbacks : public BLECharacteristicCallbacks {
 };
 
 void initBluetooth() {
+  logger.info("[init]");
   BLEDevice::init("Record Stand");
   server = BLEDevice::createServer();
   server->setCallbacks(new ServerCallbacks());

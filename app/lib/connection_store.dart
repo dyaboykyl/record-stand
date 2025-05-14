@@ -42,17 +42,26 @@ abstract class _ConnectionStoreBase with Store {
   }
 
   void destroy() {
+    log('[destroy]');
     _scanResultsSubscription.cancel();
     _isScanningSubscription.cancel();
     disconnect();
   }
 
   void scan() {
+    log('[scan]');
     FlutterBluePlus.startScan(timeout: const Duration(seconds: 4));
   }
 
   void connect() {
+    log('[connect] isConnecting: $isConnecting, connected: $connected');
+    // disconnect();
     if (isConnecting || connected) {
+      return;
+    }
+
+    if (device == null) {
+      log('No device to connect to');
       return;
     }
 
@@ -60,6 +69,7 @@ abstract class _ConnectionStoreBase with Store {
   }
 
   void disconnect() {
+    log('[disconnect]');
     device?.disconnect();
   }
 
@@ -75,11 +85,13 @@ abstract class _ConnectionStoreBase with Store {
 
   @action
   void _onScanningStateChange(bool state) {
+    log('[_onScanningStateChange] $state');
     isScanning = state;
   }
 
   @action
   void _onScanResults(List<ScanResult> results) {
+    log('[_onScanResults] device: ${device?.platformName}, results: ${results.length}');
     if (device != null) {
       return;
     }
@@ -92,7 +104,9 @@ abstract class _ConnectionStoreBase with Store {
       log('Device found');
       FlutterBluePlus.stopScan();
       device?.connectionState.listen(_onConnectionStateChange, onError: _onError);
-      device?.isConnecting.listen(_onConnectingChange);
+      device?.isConnecting.listen(_onConnectingChange, onError: _onError);
+      device?.isDisconnecting.listen(_onDisconnectingChange, onError: _onError);
+      device?.onServicesReset.listen(_onServicesReset, onError: _onError);
       connect();
     } else {
       log('Device not found');
@@ -101,13 +115,24 @@ abstract class _ConnectionStoreBase with Store {
 
   @action
   void _onConnectingChange(bool state) {
-    log('Connecting: $state');
+    log('[_onConnectingChange]: $state');
     isConnecting = state;
   }
 
   @action
+  void _onServicesReset(dynamic state) {
+    log('[_onServicesReset]: $state');
+  }
+
+  @action
+  void _onDisconnectingChange(bool state) {
+    log('[_onDisconnectingChange]: $state');
+    // isConnecting = state;
+  }
+
+  @action
   void _onConnectionStateChange(BluetoothConnectionState state) {
-    log('Connection state changed to $state');
+    log('[_onConnectionStateChange] $state');
     connected = state == BluetoothConnectionState.connected;
     if (state == BluetoothConnectionState.connected) {
       device?.discoverServices().then(_onServicesDiscovered);
@@ -120,7 +145,7 @@ abstract class _ConnectionStoreBase with Store {
 
   @action
   void _onServicesDiscovered(List<BluetoothService> services) {
-    log('Services discovered');
+    log('[_onServicesDiscovered]');
     final service = services.firstWhereOrNull((service) => service.serviceUuid == serviceUuid);
     if (service == null) {
       log('Service not found');

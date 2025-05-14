@@ -1,1 +1,0 @@
-/Users/zack/Development/PlatformIO/Record Stand/app/build/app/intermediates/cxx/RelWithDebInfo/a295k1e3/obj/x86_64

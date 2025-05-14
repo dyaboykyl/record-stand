@@ -52,7 +52,7 @@ class IdentifyResult {
 class IdentifyStore = _IdentifyStoreBase with _$IdentifyStore;
 
 abstract class _IdentifyStoreBase with Store {
-  final record = AudioRecorder();
+  final recorder = AudioRecorder();
 
   late String filePath;
 
@@ -75,31 +75,39 @@ abstract class _IdentifyStoreBase with Store {
 
   Future init() async {
     // ACRCloud.setUp(ACRCloudConfig(ACR_ACCESS_KEY, ACR_ACCESS_SECRET, ACR_HOST));
-    await record.hasPermission();
+    await recorder.hasPermission();
     final directory = '${(await getApplicationDocumentsDirectory()).path}/recordings';
     await Directory(directory).create(recursive: true);
     filePath = '$directory/sample.wav';
   }
 
+  int i = 0;
   @action
   Future identify() async {
     log('Identifying...');
 
     try {
       log('Recording');
-      // isRecording = true;
-      // await record.start(const RecordConfig(encoder: AudioEncoder.wav), path: filePath);
-      // await Future.delayed(Duration(seconds: 5));
-      // await record.stop();
-      // isRecording = false;
-
+      // await record();
       // await callAcrService();
-      identifyResult = IdentifyResult('Song name', 'Artist name', '');
+      identifyResult =
+          IdentifyResult('Six Blocks Away $i', 'Lucinda Williams $i', 'Sweet Old World');
+      i++;
       log('Done identifying. Found result: ${identifyResult != null}');
       await sendToDevice();
     } finally {
       isRecording = false;
     }
+  }
+
+  @action
+  Future record() async {
+    log('Recording');
+    isRecording = true;
+    await recorder.start(const RecordConfig(encoder: AudioEncoder.wav), path: filePath);
+    await Future.delayed(Duration(seconds: 5));
+    await recorder.stop();
+    isRecording = false;
   }
 
   @action

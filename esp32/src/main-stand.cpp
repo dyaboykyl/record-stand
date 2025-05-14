@@ -10,21 +10,21 @@
 
 void setup() {
   initAll();
-  delay(300);
-  startScreen();
+  // delay(300);
+  // startScreen();
 }
 
 void loop() {
   delay(5);
-  screenLoop();
+  // screenLoop();
 
   static int i = 1;
   if (button1.pressed()) {
-    appState.onNewIdentifyResult(
-        (string("Song ") + to_string(i++) + string("+=+The Beatles+=+NO_RESULT+=+NO_RESULT"))
-            .c_str());
+    // appState.onNewIdentifyResult(
+    //     (string("Song ") + to_string(i++) + string("+=+The Beatles+=+NO_RESULT+=+NO_RESULT"))
+    //         .c_str());
   }
   if (button2.pressed()) {
-    appState.goToScreen(Screen::SETTINGS);
+    // appState.goToScreen(Screen::SETTINGS);
   }
 }

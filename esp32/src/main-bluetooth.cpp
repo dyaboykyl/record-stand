@@ -13,7 +13,9 @@
 static auto logger = Logger("Main");
 
 void setup() {
-  initAll();
+  initLogging();
+  initButtons();
+  initBluetooth();
 
   logger.info("Ready");
 }

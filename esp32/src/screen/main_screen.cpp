@@ -29,8 +29,6 @@ static lv_anim_t listeningAnimation;
 lv_obj_t *mainScreen = nullptr;
 static lv_obj_t *parent = nullptr;
 
-static lv_obj_t *artistLabel;
-
 void nowPlayingLabel(lv_obj_t *container) {
   static lv_style_t style;
   lv_style_init(&style);
@@ -43,44 +41,42 @@ void nowPlayingLabel(lv_obj_t *container) {
   lv_obj_align(label, LV_ALIGN_CENTER, 0, -100);
 }
 
-void songTitleLabel(lv_obj_t *container) {
+void songArtistLabel(lv_obj_t *container) {
   static lv_style_t style;
   lv_style_init(&style);
   lv_style_set_text_font(&style, &lv_font_montserrat_32);
   lv_style_set_text_align(&style, LV_TEXT_ALIGN_CENTER);
 
-  static lv_obj_t *songLabel = lv_label_create(container);
-  // lv_label_set_text(songLabel, appState.songInfo.get().song.c_str());
-  // lv_label_set_long_mode(songLabel, LV_LABEL_LONG_WRAP);
-  // lv_obj_set_width(songLabel, 350);
-  // lv_obj_add_style(songLabel, &style, 0);
-  // lv_obj_align(songLabel, LV_ALIGN_CENTER, 0, -60);
+  static lv_obj_t *label = lv_label_create(container);
   appState.songInfo.subscribe(
       [](const SongInfo &info) {
-        logger.info("Updating now playing labels: %s", info.song.c_str());
-        lv_label_set_text(songLabel, info.song.c_str());
-        lv_label_set_long_mode(songLabel, LV_LABEL_LONG_WRAP);
-        lv_obj_set_width(songLabel, 350);
-        lv_obj_add_style(songLabel, &style, 0);
-        lv_obj_align(songLabel, LV_ALIGN_CENTER, 0, -60);
+        logger.info("Updating artist label: %s", info.artist.c_str());
+        lv_label_set_text(label, info.artist.c_str());
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(label, 350);
+        lv_obj_add_style(label, &style, 0);
+        lv_obj_align(label, LV_ALIGN_CENTER, 0, -60);
       },
       true);
 }
 
-void buildArtistLabel(lv_obj_t *container) {
+void buildSongLabel(lv_obj_t *container) {
   static lv_style_t style;
   lv_style_init(&style);
   lv_style_set_text_font(&style, &lv_font_montserrat_28);
   lv_style_set_text_align(&style, LV_TEXT_ALIGN_CENTER);
 
-  if (!artistLabel) {
-    artistLabel = lv_label_create(container);
-  }
-  // lv_label_set_text(artistLabel, artistName.c_str());
-  lv_obj_add_style(artistLabel, &style, 0);
-  lv_label_set_long_mode(artistLabel, LV_LABEL_LONG_WRAP);
-  lv_obj_set_width(artistLabel, 350);
-  lv_obj_align(artistLabel, LV_ALIGN_CENTER, 0, -20);
+  static lv_obj_t *label = lv_label_create(container);
+  lv_obj_add_style(label, &style, 0);
+  appState.songInfo.subscribe(
+      [](const SongInfo &info) {
+        logger.info("Updating song label: %s", info.song.c_str());
+        lv_label_set_text(label, info.song.c_str());
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(label, 350);
+        lv_obj_align(label, LV_ALIGN_CENTER, 0, -20);
+      },
+      true);
 }
 
 void nowPlayingInfo() {
@@ -96,8 +92,8 @@ void nowPlayingInfo() {
   lv_obj_align(container, LV_ALIGN_CENTER, 0, -40);
 
   nowPlayingLabel(container);
-  songTitleLabel(container);
-  buildArtistLabel(container);
+  songArtistLabel(container);
+  buildSongLabel(container);
 }
 
 void actionLedAnimationCallback(void *actionLed, int32_t value) {

@@ -46,4 +46,5 @@ void Logger::log(const esp_log_level_t level, const char* format, va_list args) 
   vsnprintf(buffer, sizeof(buffer), format, args);
   Serial.print(buffer);
   Serial.println();
+  Serial.flush();
 }

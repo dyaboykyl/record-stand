@@ -4,6 +4,7 @@
 #include <Arduino.h>
 
 #include "AppState.h"
+#include "Observable.h"
 #include "acr.h"
 #include "audio.h"
 #include "bluetooth.h"
@@ -18,11 +19,15 @@
 
 using namespace std;
 
-#define LABEL "Controller"
-
 #define LED_COUNT 16
 
 AppState appState = AppState();
+
+TaskHandle_t taskHandle0;
+TaskHandle_t taskHandle1;
+QueueHandle_t queueHandle;
+
+static auto logger = Logger("Controller");
 
 int vprintfSerial(const char* fmt, va_list args) {
   char log_print_buffer[256];
@@ -31,6 +36,11 @@ int vprintfSerial(const char* fmt, va_list args) {
   Serial.print(log_print_buffer);
 
   return 0;
+}
+
+void runTask(TaskFunction_t task, int core) {
+  xTaskCreatePinnedToCore(task, "Task1", 10000, NULL, 1, core == 0 ? &taskHandle0 : &taskHandle1,
+                          core);
 }
 
 void initLogging() {
@@ -52,25 +62,42 @@ void initLogging() {
   }
 
   Serial.println("Serial: Logging ready");
-  ESP_LOGI(LABEL, "Logging ready");
+  logger.info("Logging ready");
 }
 
 void initState() { appState.init(); }
 
-void initAll() {
+void initTask(void* params) {
   initLogging();
   initStorage();
   initButtons();
+  initState();
   initScreen();
   initBluetooth();
   initAudio();
   // allocateWavSpace();
   setupLeds(LED_COUNT);
-  initState();
+
+  startScreen();
+  while (true) {
+    processBleQueue();
+    screenLoop();
+    delay(5);
+  }
 }
 
-TaskHandle_t taskHandle0;
-TaskHandle_t taskHandle1;
+void processBleQueue() {
+  static BleMessage message;
+  if (xQueueReceive(queueHandle, &message, 10)) {
+    logger.info("Received message on queue: %d", message.length);
+    appState.onNewIdentifyResult(message.data);
+  }
+}
+
+void initAll() {
+  queueHandle = xQueueCreate(5, sizeof(BleMessage));
+  runTask(initTask, 0);
+}
 
 void recordWavAndSend(void* params) {
   initWifi();
@@ -79,12 +106,6 @@ void recordWavAndSend(void* params) {
   identifySongV2(getWavData(), getWavFileSize(), true);
   for (;;) delay(1000);
 }
-
-void runTask(TaskFunction_t task, int core) {
-  xTaskCreatePinnedToCore(task, "Task1", 10000, NULL, 1, core == 0 ? &taskHandle0 : &taskHandle1,
-                          core);
-}
-
 void runWavTask() { runTask(recordWavAndSend, 1); }
 
 void persistWifiCredentials(string ssid, string password) {
@@ -134,7 +155,7 @@ void logLoop() {
   while (true) {
     int now = millis();
     if (now - last > 100) {
-      ESP_LOGI(LABEL, "Looping");
+      logger.info("Looping");
       last = now;
     }
   }
