@@ -13,7 +13,7 @@ lv_obj_t *settingsScreen = nullptr;
 static lv_obj_t *parent = nullptr;
 
 void calibrateButton() {
-  lv_obj_t *button = lv_button_create(parent);
+  static lv_obj_t *button = lv_button_create(parent);
   lv_obj_align(button, LV_ALIGN_CENTER, 0, -100);
   lv_obj_remove_flag(button, LV_OBJ_FLAG_PRESS_LOCK);
   enable(button);
@@ -25,7 +25,7 @@ void calibrateButton() {
   lv_obj_center(label);
 
   lv_obj_add_event_cb(
-      button, [](lv_event_t *e) { screenState.goToScreen(Screen::CALIBRATION); }, LV_EVENT_CLICKED,
+      button, [](lv_event_t *e) { appState.goToScreen(Screen::CALIBRATION); }, LV_EVENT_CLICKED,
       NULL);
 }
 
@@ -42,7 +42,7 @@ void doneButton() {
   lv_obj_center(label);
 
   lv_obj_add_event_cb(
-      button, [](lv_event_t *e) { screenState.goToScreen(Screen::MAIN); }, LV_EVENT_CLICKED, NULL);
+      button, [](lv_event_t *e) { appState.goToScreen(Screen::MAIN); }, LV_EVENT_CLICKED, NULL);
 }
 
 void title() {
@@ -54,10 +54,9 @@ void title() {
   lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 80);
 }
 
-lv_obj_t *buildSettingsScreen() {
-  auto animation = LV_SCR_LOAD_ANIM_OVER_TOP;
+lv_obj_t *loadSettingsScreen(lv_screen_load_anim_t animation) {
   if (settingsScreen == nullptr) {
-    logger.info("Creating");
+    logger.info("Building");
     settingsScreen = lv_obj_create(NULL);
     parent = lv_obj_create(settingsScreen);
     lv_obj_align(parent, LV_ALIGN_CENTER, 0, 0);
@@ -69,7 +68,7 @@ lv_obj_t *buildSettingsScreen() {
     doneButton();
   }
 
-  logger.info("Loading");
+  logger.info("Loading animation: %d", animation);
   lv_screen_load_anim(settingsScreen, animation, 250, 0, false);
   return parent;
 }

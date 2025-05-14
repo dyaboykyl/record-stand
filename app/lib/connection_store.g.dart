@@ -100,7 +100,7 @@ mixin _$ConnectionStore on _ConnectionStoreBase, Store {
       ActionController(name: '_ConnectionStoreBase', context: context);
 
   @override
-  dynamic _onScanningStateChange(bool state) {
+  void _onScanningStateChange(bool state) {
     final _$actionInfo = _$_ConnectionStoreBaseActionController.startAction(
         name: '_ConnectionStoreBase._onScanningStateChange');
     try {

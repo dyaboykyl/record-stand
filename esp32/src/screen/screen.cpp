@@ -71,6 +71,13 @@ void readTouch(lv_indev_t *indev, lv_indev_data_t *data) {
 }
 
 void setupLvgl() {
+  void *lvglSpace = heap_caps_malloc(LV_MEM_SIZE, MALLOC_CAP_SPIRAM);
+  logger.info("LV_MEM_ADR: %p", lvglSpace);
+  if ((int)lvglSpace != LV_MEM_ADR) {
+    logger.warn("LVGL memory allocation not correct");
+    delay(20000);
+    return;
+  }
   lv_init();
 
   /*Set a tick source so that LVGL will know how much time elapsed. */
@@ -83,14 +90,6 @@ void setupLvgl() {
 
   screenWidth = gfx->width();
   screenHeight = gfx->height();
-  // bufSize = screenWidth * 40;
-
-  // disp_draw_buf =
-  //     (lv_color_t *)heap_caps_malloc(bufSize * 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-  // if (!disp_draw_buf) {
-  //   // remove MALLOC_CAP_INTERNAL flag try again
-  //   disp_draw_buf = (lv_color_t *)heap_caps_malloc(bufSize * 2, MALLOC_CAP_8BIT);
-  // }
 
   if (!disp_draw_buf) {
     logger.warn("LVGL disp_draw_buf allocate failed!");
@@ -116,18 +115,9 @@ void initScreen() {
   initTouch();
   setupLvgl();
 
-  // lv_obj_t *label = lv_label_create(lv_scr_act());
-  // lv_label_set_text(label, "Hello Arduino, I'm LVGL!(V" GFX_STR(LVGL_VERSION_MAJOR) "." GFX_STR(
-  //                              LVGL_VERSION_MINOR) "." GFX_STR(LVGL_VERSION_PATCH) ")");
-  // lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
-
   logger.info("Setup done");
-  // gfx->draw
 }
 
-void startScreen() { screenState.goToScreen(Screen::MAIN); }
+void startScreen() { appState.goToScreen(Screen::MAIN); }
 
-void screenLoop() {
-  lv_task_handler(); /* let the GUI do its work */
-  delay(5);
-}
+void screenLoop() { lv_task_handler(); }

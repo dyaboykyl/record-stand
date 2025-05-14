@@ -59,7 +59,7 @@
     #define LV_MEM_POOL_EXPAND_SIZE 0
 
     /*Set an address for the memory pool instead of allocating it as a normal array. Can be in external SRAM too.*/
-    #define LV_MEM_ADR 0x3d871a08    /*0: unused*/
+    #define LV_MEM_ADR 0x3d8711dc    /*0: unused*/
     #undef LV_MEM_POOL_INCLUDE
     #undef LV_MEM_POOL_ALLOC
     /*Instead of an address give a memory allocator that will be called to get a memory pool for LVGL. E.g. my_malloc*/

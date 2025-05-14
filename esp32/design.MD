@@ -79,6 +79,25 @@
  - if (!confirm):
     appController.updateOffset(previousOffset)
 
+### Main Screen
+#### State
+- Song info: artist, song, time
+- Bluetooth connection
+- Performance metrics
+  - Sample rate
+  - Audio threshold
+  - LED style
+- Statistics
+#### Componenets
+- Song title
+- Artist
+- Song position
+- Settings button
+- Performance overlay
+- Background
+- LEDs?
+- Connection status
+
 ### Loop
 #### Init
 #### CPU 1

@@ -9,13 +9,17 @@
 #include <string>
 #include <thread>
 
+#include "AppState.h"
 #include "calibration.h"
+#include "controller.h"
 #include "screen/screen.h"
 #include "utils.h"
 
 using namespace std;
 
 static auto logger = Logger("MainScreen");
+
+extern AppState appState;
 
 string songTitle = "Some very very long song title";
 string artistName = "The very long artists of song";
@@ -24,6 +28,8 @@ string action = "Listening";
 static lv_anim_t listeningAnimation;
 lv_obj_t *mainScreen = nullptr;
 static lv_obj_t *parent = nullptr;
+
+static lv_obj_t *artistLabel;
 
 void nowPlayingLabel(lv_obj_t *container) {
   static lv_style_t style;
@@ -43,12 +49,22 @@ void songTitleLabel(lv_obj_t *container) {
   lv_style_set_text_font(&style, &lv_font_montserrat_32);
   lv_style_set_text_align(&style, LV_TEXT_ALIGN_CENTER);
 
-  lv_obj_t *label = lv_label_create(container);
-  lv_label_set_text(label, songTitle.c_str());
-  lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-  lv_obj_set_width(label, 350);
-  lv_obj_add_style(label, &style, 0);
-  lv_obj_align(label, LV_ALIGN_CENTER, 0, -60);
+  static lv_obj_t *songLabel = lv_label_create(container);
+  // lv_label_set_text(songLabel, appState.songInfo.get().song.c_str());
+  // lv_label_set_long_mode(songLabel, LV_LABEL_LONG_WRAP);
+  // lv_obj_set_width(songLabel, 350);
+  // lv_obj_add_style(songLabel, &style, 0);
+  // lv_obj_align(songLabel, LV_ALIGN_CENTER, 0, -60);
+  appState.songInfo.subscribe(
+      [](const SongInfo &info) {
+        logger.info("Updating now playing labels: %s", info.song.c_str());
+        lv_label_set_text(songLabel, info.song.c_str());
+        lv_label_set_long_mode(songLabel, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(songLabel, 350);
+        lv_obj_add_style(songLabel, &style, 0);
+        lv_obj_align(songLabel, LV_ALIGN_CENTER, 0, -60);
+      },
+      true);
 }
 
 void buildArtistLabel(lv_obj_t *container) {
@@ -57,12 +73,14 @@ void buildArtistLabel(lv_obj_t *container) {
   lv_style_set_text_font(&style, &lv_font_montserrat_28);
   lv_style_set_text_align(&style, LV_TEXT_ALIGN_CENTER);
 
-  lv_obj_t *label = lv_label_create(container);
-  lv_label_set_text(label, artistName.c_str());
-  lv_obj_add_style(label, &style, 0);
-  lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-  lv_obj_set_width(label, 350);
-  lv_obj_align(label, LV_ALIGN_CENTER, 0, -20);
+  if (!artistLabel) {
+    artistLabel = lv_label_create(container);
+  }
+  // lv_label_set_text(artistLabel, artistName.c_str());
+  lv_obj_add_style(artistLabel, &style, 0);
+  lv_label_set_long_mode(artistLabel, LV_LABEL_LONG_WRAP);
+  lv_obj_set_width(artistLabel, 350);
+  lv_obj_align(artistLabel, LV_ALIGN_CENTER, 0, -20);
 }
 
 void nowPlayingInfo() {
@@ -152,16 +170,14 @@ void settingsButton() {
       button,
       [](lv_event_t *e) {
         logger.info("Settings button clicked");
-        screenState.goToScreen(Screen::SETTINGS);
+        appState.goToScreen(Screen::SETTINGS);
       },
       LV_EVENT_CLICKED, NULL);
 }
 
-lv_obj_t *buildMainScreen() {
-  auto animation = LV_SCR_LOAD_ANIM_OVER_TOP;
+lv_obj_t *loadMainScreen(lv_screen_load_anim_t animation) {
   if (mainScreen == nullptr) {
-    logger.info("Creating");
-    animation = LV_SCR_LOAD_ANIM_NONE;
+    logger.info("Building");
     mainScreen = lv_obj_create(NULL);
     parent = lv_obj_create(mainScreen);
     lv_obj_align(parent, LV_ALIGN_CENTER, 0, 0);
@@ -169,9 +185,10 @@ lv_obj_t *buildMainScreen() {
     // lv_obj_set_style_bg_color(mainScreen, lv_color_white(), 0);
     nowPlayingInfo();
     listeningLed();
+    settingsButton();
     // title();
   }
-  logger.info("Loading");
+  logger.info("Loading animation: %d", animation);
   lv_screen_load_anim(mainScreen, animation, 250, 0, false);
   return parent;
 }

@@ -1,7 +1,7 @@
 
 #include <lvgl.h>
 
-#include "screen/ScreenState.h"
+#include "AppState.h"
 
 class CalibrationState {
  public:
@@ -10,4 +10,4 @@ class CalibrationState {
  private:
 };
 
-lv_obj_t* buildCalibrationScreen();
+lv_obj_t* loadCalibrationScreen(lv_screen_load_anim_t animation);

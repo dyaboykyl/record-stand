@@ -93,13 +93,13 @@ mixin _$IdentifyStore on _IdentifyStoreBase, Store {
       Atom(name: '_IdentifyStoreBase.identifyResult', context: context);
 
   @override
-  SongInfo? get identifyResult {
+  IdentifyResult? get identifyResult {
     _$identifyResultAtom.reportRead();
     return super.identifyResult;
   }
 
   @override
-  set identifyResult(SongInfo? value) {
+  set identifyResult(IdentifyResult? value) {
     _$identifyResultAtom.reportWrite(value, super.identifyResult, () {
       super.identifyResult = value;
     });

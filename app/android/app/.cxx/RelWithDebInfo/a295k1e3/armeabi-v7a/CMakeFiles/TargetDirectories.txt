@@ -1,0 +1,2 @@
+/Users/zack/Development/PlatformIO/Record Stand/app/android/app/.cxx/RelWithDebInfo/a295k1e3/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/zack/Development/PlatformIO/Record Stand/app/android/app/.cxx/RelWithDebInfo/a295k1e3/armeabi-v7a/CMakeFiles/rebuild_cache.dir

@@ -39,9 +39,9 @@ void Logger::log(const esp_log_level_t level, const char* format, va_list args) 
 
   Serial.print("[");
   Serial.print(level);
-  Serial.print("] ");
+  Serial.print("] (");
   Serial.print(label);
-  Serial.print(" ");
+  Serial.print(") ");
   char buffer[256];
   vsnprintf(buffer, sizeof(buffer), format, args);
   Serial.print(buffer);

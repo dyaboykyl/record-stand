@@ -1,11 +1,7 @@
 #pragma once
 
-using namespace std;
+#include "AppState.h"
 
-struct SongInfo {
-  string artist;
-  string song;
-  string album;
-};
+using namespace std;
 
 SongInfo identifySongV2(uint8_t* wavFile, int size, bool local = false);

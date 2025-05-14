@@ -3,13 +3,14 @@
 
 #include <Arduino.h>
 
+#include "AppState.h"
 #include "acr.h"
 #include "audio.h"
+#include "bluetooth.h"
 #include "device.h"
 #include "leds.h"
 #include "logging.h"
 #include "network.h"
-#include "screen/ScreenState.h"
 #include "screen/screen.h"
 #include "secrets.h"
 #include "storage.h"
@@ -21,7 +22,7 @@ using namespace std;
 
 #define LED_COUNT 16
 
-ScreenState screenState = ScreenState();
+AppState appState = AppState();
 
 int vprintfSerial(const char* fmt, va_list args) {
   char log_print_buffer[256];
@@ -37,9 +38,12 @@ void initLogging() {
   Serial.begin(115200);
 
   esp_log_set_vprintf(vprintfSerial);
-  setLevel(ESP_LOG_DEBUG);
+#ifndef DEBUG
+#define DEBUG false
+#endif
+  setLevel(DEBUG ? ESP_LOG_DEBUG : ESP_LOG_INFO);
 
-  Serial.setDebugOutput(true);
+  Serial.setDebugOutput(DEBUG);
 
   delay(500);
   auto start = millis();
@@ -51,14 +55,15 @@ void initLogging() {
   ESP_LOGI(LABEL, "Logging ready");
 }
 
-void initState() { screenState.init(); }
+void initState() { appState.init(); }
 
 void initAll() {
   initLogging();
   initStorage();
-  initAudio();
   initButtons();
   initScreen();
+  initBluetooth();
+  initAudio();
   // allocateWavSpace();
   setupLeds(LED_COUNT);
   initState();

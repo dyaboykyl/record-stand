@@ -4,14 +4,14 @@
 #include <esp_log.h>
 #include <lvgl.h>
 
+#include "AppState.h"
 #include "Observable.h"
 #include "logging.h"
-#include "screen/ScreenState.h"
 #include "screen/calibration.h"
 #include "screen/screen.h"
 #include "utils.h"
 
-extern ScreenState screenState;
+extern AppState appState;
 
 static auto logger = Logger("CalibrationScreen");
 static lv_obj_t* parent = nullptr;
@@ -64,7 +64,7 @@ static void moveButtonHandler(lv_event_t* e) {
 
   int x = 0, y = 0, r = 0;
   auto direction = (char*)lv_event_get_user_data(e);
-  auto offset = screenState.screenOffset.get();
+  auto offset = appState.screenOffset.get();
   if (direction == LV_SYMBOL_RIGHT) {
     x = 1;
   } else if (direction == LV_SYMBOL_LEFT) {
@@ -90,7 +90,7 @@ static void moveButtonHandler(lv_event_t* e) {
   auto xTranslate = offset.x + x;
   auto yTranslate = offset.y + y;
   logger.debug("Move %c pressed. New x: %d new y: %d", direction[0], xTranslate, yTranslate);
-  screenState.screenOffset.set({xTranslate, yTranslate});
+  appState.screenOffset.set({xTranslate, yTranslate});
 }
 
 int buttonSize = 70;
@@ -123,7 +123,7 @@ static void doneButton() {
   lv_obj_center(label);
 
   lv_obj_add_event_cb(
-      button, [](lv_event_t* e) { screenState.goToScreen(Screen::SETTINGS); }, LV_EVENT_CLICKED, NULL);
+      button, [](lv_event_t* e) { appState.goToScreen(Screen::SETTINGS); }, LV_EVENT_CLICKED, NULL);
 }
 
 static void title() {
@@ -142,7 +142,7 @@ void offsetText() {
   lv_obj_set_style_align(offsetLabel, LV_ALIGN_CENTER, 0);
   lv_obj_align(offsetLabel, LV_ALIGN_TOP_LEFT, 350, 150);
 
-  screenState.screenOffset.subscribe(
+  appState.screenOffset.subscribe(
       [offsetLabel](const Pair& offset) {
         lv_label_set_text(offsetLabel, ("Offset " + pairToString(offset)).c_str());
       },
@@ -150,17 +150,16 @@ void offsetText() {
 }
 
 lv_obj_t* calibrationScreen = nullptr;
-lv_obj_t* buildCalibrationScreen() {
-  auto animation = LV_SCR_LOAD_ANIM_OVER_TOP;
+lv_obj_t* loadCalibrationScreen(lv_screen_load_anim_t animation) {
   if (calibrationScreen == nullptr) {
-    logger.info("Creating");
-    animation = LV_SCR_LOAD_ANIM_NONE;
+    logger.info("Building");
     calibrationScreen = lv_obj_create(NULL);
     parent = lv_obj_create(calibrationScreen);
-    static auto calibrationScreenState = CalibrationState();
-    calibrationScreenState.init();
+    static auto calibrationAppState = CalibrationState();
+    calibrationAppState.init();
     lv_obj_align(parent, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_size(parent, SCREEN_DIAMETER * 1.15, SCREEN_DIAMETER * 1.15);
+
     calibrationLines();
     title();
     offsetText();
@@ -171,7 +170,7 @@ lv_obj_t* buildCalibrationScreen() {
     moveButton(LV_SYMBOL_DOWN, 0, buttonOffset + buttonSize / 2);
     moveButton(LV_SYMBOL_REFRESH, 0, 0);
   }
-  logger.info("Loading");
+  logger.info("Loading animation: %d", animation);
   lv_screen_load_anim(calibrationScreen, animation, 250, 0, false);
   return parent;
 }

@@ -5,6 +5,10 @@
 #include <FreeRTOS.h>
 #include <WString.h>
 
+#include "AppState.h"
+
+extern AppState appState;
+
 void initAll();
 void initLogging();
 void start();

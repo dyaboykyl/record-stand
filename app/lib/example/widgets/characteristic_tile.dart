@@ -4,8 +4,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
-import "../utils/snackbar.dart";
-import "descriptor_tile.dart";
+import '../utils/snackbar.dart';
+import 'descriptor_tile.dart';
 
 class CharacteristicTile extends StatefulWidget {
   final BluetoothCharacteristic characteristic;
@@ -50,34 +50,31 @@ class _CharacteristicTileState extends State<CharacteristicTile> {
   Future onReadPressed() async {
     try {
       await c.read();
-      Snackbar.show(ABC.c, "Read: Success", success: true);
+      Snackbar.show(ABC.c, 'Read: Success', success: true);
     } catch (e) {
-      Snackbar.show(ABC.c, prettyException("Read Error:", e), success: false);
+      Snackbar.show(ABC.c, prettyException('Read Error:', e), success: false);
       print(e);
     }
   }
 
   Future onWritePressed() async {
     try {
-      await c.write(
-          "A really long paragraph that is talking about what song just played and has lots of information"
-              .codeUnits,
-          withoutResponse: false);
-      Snackbar.show(ABC.c, "Write: Success", success: true);
+      await c.write('A really long'.codeUnits, withoutResponse: false);
+      Snackbar.show(ABC.c, 'Write: Success', success: true);
       // if (c.properties.read) {
       //   await c.read();
       // }
     } catch (e) {
-      Snackbar.show(ABC.c, prettyException("Write Error:", e), success: false);
+      Snackbar.show(ABC.c, prettyException('Write Error:', e), success: false);
       print(e);
     }
   }
 
   Future onSubscribePressed() async {
     try {
-      String op = c.isNotifying == false ? "Subscribe" : "Unubscribe";
+      String op = c.isNotifying == false ? 'Subscribe' : 'Unubscribe';
       await c.setNotifyValue(c.isNotifying == false);
-      Snackbar.show(ABC.c, "$op : Success", success: true);
+      Snackbar.show(ABC.c, '$op : Success', success: true);
       if (c.properties.read) {
         await c.read();
       }
@@ -85,7 +82,7 @@ class _CharacteristicTileState extends State<CharacteristicTile> {
         setState(() {});
       }
     } catch (e) {
-      Snackbar.show(ABC.c, prettyException("Subscribe Error:", e), success: false);
+      Snackbar.show(ABC.c, prettyException('Subscribe Error:', e), success: false);
       print(e);
     }
   }
@@ -102,7 +99,7 @@ class _CharacteristicTileState extends State<CharacteristicTile> {
 
   Widget buildReadButton(BuildContext context) {
     return TextButton(
-        child: Text("Read"),
+        child: Text('Read'),
         onPressed: () async {
           await onReadPressed();
           if (mounted) {
@@ -114,7 +111,7 @@ class _CharacteristicTileState extends State<CharacteristicTile> {
   Widget buildWriteButton(BuildContext context) {
     bool withoutResp = widget.characteristic.properties.writeWithoutResponse;
     return TextButton(
-        child: Text(withoutResp ? "WriteNoResp" : "Write"),
+        child: Text(withoutResp ? 'WriteNoResp' : 'Write'),
         onPressed: () async {
           await onWritePressed();
           if (mounted) {
@@ -126,7 +123,7 @@ class _CharacteristicTileState extends State<CharacteristicTile> {
   Widget buildSubscribeButton(BuildContext context) {
     bool isNotifying = widget.characteristic.isNotifying;
     return TextButton(
-        child: Text(isNotifying ? "Unsubscribe" : "Subscribe"),
+        child: Text(isNotifying ? 'Unsubscribe' : 'Subscribe'),
         onPressed: () async {
           await onSubscribePressed();
           if (mounted) {
